@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diamond Grading Sheet</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-color: #f4f7f6;
+            --panel-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar / Palette */
+        .sidebar {
+            width: 250px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid #ddd;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        .tool-section h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 5px;
+        }
+
+        .symbol-palette {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .symbol-item {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            text-align: center;
+            cursor: grab;
+            background: #fafafa;
+            transition: all 0.2s;
+        }
+
+        .symbol-item:hover {
+            background: #eef;
+            border-color: var(--accent-color);
+        }
+
+        .symbol-icon {
+            width: 30px;
+            height: 30px;
+            margin: 0 auto 5px;
+            display: block;
+        }
+
+        /* Canvas Area */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #e0e0e0;
+            position: relative;
+        }
+
+        canvas {
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: crosshair;
+        }
+
+        /* Controls Panel */
+        .controls {
+            padding: 15px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                order: 2;
+                box-sizing: border-box;
+            }
+            .canvas-area {
+                order: 1;
+                padding: 10px;
+            }
+            canvas {
+                width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Diamond Grading Report</h1>
+</header>
+
+<div class="main-container">
+    <!-- Sidebar: Palette & Controls -->
+    <div class="sidebar">
+        
+        <div class="tool-section">
+            <h3>Inclusions (Drag to Chart)</h3>
+            <div class="symbol-palette">
+                <!-- Draggable Items -->
+                <div class="symbol-item" draggable="true" data-type="crystal" title="Drag or Click to add">
+                    <div class="symbol-icon" style="border: 2px solid red; border-radius: 50%;"></div>
+                    <small>Crystal</small>
+                </div>
+                <div class="symbol-item" draggable="true" data-type="feather" title="Drag or Click to add">
+                    <div class="symbol-icon" style="background: linear-gradient(45deg, transparent 45%, red 45%, red 55%, transparent 55%);"></div>
+                    <small>Feather</small>
+                </div>
+                <div class="symbol-item" draggable="true" data-type="cloud" title="Drag or Click to add">
+                    <div class="symbol-icon" style="border: 2px dotted red; border-radius: 50%;"></div>
+                    <small>Cloud</small>
+                </div>
+                <div class="symbol-item" draggable="true" data-type="pinpoint" title="Drag or Click to add">
+                    <div class="symbol-icon" style="background-color: red; border-radius: 50%; width: 10px; height: 10px; margin-top: 10px;"></div>
+                    <small>Pinpoint</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-section">
+            <h3>Edit Selected</h3>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Rotation (<span id="rot-val">0</span>°)</label>
+                    <input type="range" id="rotation" min="0" max="360" value="0" disabled>
+                </div>
+                <div class="control-group">
+                    <label>Scale (<span id="scale-val">1.0</span>x)</label>
+                    <input type="range" id="scale" min="0.5" max="3.0" step="0.1" value="1" disabled>
+                </div>
+                <button id="delete-btn" class="btn btn-danger" disabled>Delete Selected</button>
+            </div>
+        </div>
+
+        <div class="tool-section">
+            <button id="clear-all" class="btn" style="background-color: #7f8c8d;">Clear Chart</button>
+            <button id="save-btn" class="btn" style="margin-top: 10px;">Download Image</button>
+        </div>
+    </div>
+
+    <!-- Main Canvas -->
+    <div class="canvas-area">
+        <canvas id="gradingCanvas" width="800" height="600"></canvas>
+    </div>
+</div>
+
+<script>
+    /**
+     * Diamond Grading Application Logic
+     */
+    const canvas = document.getElementById('gradingCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // UI Elements
+    const rotationInput = document.getElementById('rotation');
+    const scaleInput = document.getElementById('scale');
+    const rotValDisplay = document.getElementById('rot-val');
+    const scaleValDisplay = document.getElementById('scale-val');
+    const deleteBtn = document.getElementById('delete-btn');
+    const clearBtn = document.getElementById('clear-all');
+    const saveBtn = document.getElementById('save-btn');
+
+    // State
+    let inclusions = []; // Array to store inclusion objects
+    let selectedInclusion = null;
+    let isDragging = false;
+    let dragStartX, dragStartY;
+
+    // --- 1. Drawing The Diamond Template (Background) ---
+    function drawDiamondTemplate() {
+        ctx.save();
+        ctx.strokeStyle = '#aaa';
+        ctx.lineWidth = 1;
+
+        // Draw Crown View (Top Left)
+        const crownX = 200, crownY = 300, radius = 150;
+        
+        ctx.beginPath();
+        ctx.arc(crownX, crownY, radius, 0, Math.PI * 2); // Girdle
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(crownX, crownY, radius * 0.55, 0, Math.PI * 2); // Table
+        ctx.stroke();
+
+        // Simple geometric lines for facets (Stylized)
+        for(let i=0; i<8; i++) {
+            const angle = (i * 45) * Math.PI / 180;
+            ctx.moveTo(crownX + Math.cos(angle) * radius * 0.55, crownY + Math.sin(angle) * radius * 0.55);
+            ctx.lineTo(crownX + Math.cos(angle) * radius, crownY + Math.sin(angle) * radius);
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = "#333";
+        ctx.font = "16px Arial";
+        ctx.fillText("Crown View", crownX - 40, crownY + radius + 30);
+
+        // Draw Pavilion View (Right Side)
+        const pavX = 600, pavY = 300;
+        
+        ctx.beginPath();
+        ctx.arc(pavX, pavY, radius, 0, Math.PI * 2); // Girdle
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(pavX, pavY, 5, 0, Math.PI * 2); // Culet
+        ctx.stroke();
+
+        // Pavilion facets
+        for(let i=0; i<8; i++) {
+            const angle = (i * 45) * Math.PI / 180;
+            ctx.moveTo(pavX, pavY);
+            ctx.lineTo(pavX + Math.cos(angle) * radius, pavY + Math.sin(angle) * radius);
+            ctx.stroke();
+        }
+
+        ctx.fillText("Pavilion View", pavX - 45, pavY + radius + 30);
+
+        ctx.restore();
+    }
+
+    // --- 2. Inclusion Class & Drawing ---
+    class Inclusion {
+        constructor(x, y, type) {
+            this.x = x;
+            this.y = y;
+            this.type = type;
+            this.rotation = 0; // Degrees
+            this.scale = 1;
+            this.width = 40; // Base size
+            this.height = 40;
+            this.id = Date.now() + Math.random();
+        }
+
+        draw(ctx, isSelected) {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.rotation * Math.PI / 180);
+            ctx.scale(this.scale, this.scale);
+
+            // Draw Selection Box
+            if (isSelected) {
+                ctx.strokeStyle = '#3498db';
+                ctx.lineWidth = 2 / this.scale; // Keep line width constant visually
+                ctx.setLineDash([5, 3]);
+                ctx.strokeRect(-this.width/2 - 5, -this.height/2 - 5, this.width + 10, this.height + 10);
+                ctx.setLineDash([]);
+            }
+
+            // Draw Symbol based on type
+            ctx.strokeStyle = 'red';
+            ctx.fillStyle = 'red';
+            ctx.lineWidth = 2;
+
+            switch (this.type) {
+                case 'crystal':
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 15, 0, Math.PI * 2);
+                    ctx.stroke();
+                    break;
+                case 'feather':
+                    ctx.beginPath();
+                    ctx.moveTo(-15, -15);
+                    ctx.bezierCurveTo(-5, -5, 5, 5, 15, 15);
+                    ctx.moveTo(-15, -10);
+                    ctx.lineTo(-5, 0);
+                    ctx.moveTo(5, 10);
+                    ctx.lineTo(15, 20);
+                    ctx.stroke();
+                    break;
+                case 'cloud':
+                    ctx.setLineDash([2, 2]);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 15, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    break;
+                case 'pinpoint':
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+            }
+
+            ctx.restore();
+        }
+
+        // Simple hit detection (box based)
+        isHit(mx, my) {
+            // This is a simplified hit test. For perfect rotation hit testing, 
+            // we would need to transform the mouse coordinates into the object space.
+            // For this UI, a simple distance check usually suffices for UX.
+            const dist = Math.sqrt((mx - this.x) ** 2 + (my - this.y) ** 2);
+            return dist < (this.width / 2) * this.scale + 10; 
+        }
+    }
+
+    // --- 3. Main Render Loop ---
+    function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        drawDiamondTemplate();
+
+        inclusions.forEach(inc => {
+            inc.draw(ctx, inc === selectedInclusion);
+        });
+    }
+
+    // --- 4. Event Listeners ---
+
+    // HTML5 Drag and Drop (From Palette to Canvas)
+    const draggables = document.querySelectorAll('.symbol-item');
+    draggables.forEach(elem => {
+        elem.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('type', elem.dataset.type);
+        });
+        // Click to add (Mobile friendly alternative to drag)
+        elem.addEventListener('click', (e) => {
+            addInclusion(canvas.width / 2, canvas.height / 2, elem.dataset.type);
+        });
+    });
+
+    canvas.addEventListener('dragover', (e) => {
+        e.preventDefault(); // Allow drop
+    });
+
+    canvas.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const type = e.dataTransfer.getData('type');
+        
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+
+        addInclusion(x, y, type);
+    });
+
+    function addInclusion(x, y, type) {
+        const newInclusion = new Inclusion(x, y, type);
+        inclusions.push(newInclusion);
+        selectInclusion(newInclusion);
+        render();
+    }
+
+    // Helper for coordinates (handles CSS scaling)
+    function getPointerPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        
+        const clientX = (e.touches && e.touches.length) ? e.touches[0].clientX : e.clientX;
+        const clientY = (e.touches && e.touches.length) ? e.touches[0].clientY : e.clientY;
+
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    }
+
+    // Canvas Mouse Interaction (Select & Move)
+    function handlePointerDown(e) {
+        if (e.type === 'touchstart') e.preventDefault(); // Prevent scroll
+        
+        const {x: mx, y: my} = getPointerPos(e);
+
+        // Check hits in reverse order (topmost first)
+        let hit = null;
+        for (let i = inclusions.length - 1; i >= 0; i--) {
+            if (inclusions[i].isHit(mx, my)) {
+                hit = inclusions[i];
+                break;
+            }
+        }
+
+        if (hit) {
+            selectInclusion(hit);
+            isDragging = true;
+            dragStartX = mx - hit.x;
+            dragStartY = my - hit.y;
+        } else {
+            deselectAll();
+        }
+        render();
+    }
+
+    function handlePointerMove(e) {
+        if (isDragging && selectedInclusion) {
+            if (e.type === 'touchmove') e.preventDefault();
+            
+            const {x: mx, y: my} = getPointerPos(e);
+
+            selectedInclusion.x = mx - dragStartX;
+            selectedInclusion.y = my - dragStartY;
+            render();
+        }
+    }
+
+    function handlePointerUp(e) {
+        isDragging = false;
+    }
+
+    // Mouse Events
+    canvas.addEventListener('mousedown', handlePointerDown);
+    canvas.addEventListener('mousemove', handlePointerMove);
+    canvas.addEventListener('mouseup', handlePointerUp);
+    // Touch Events
+    canvas.addEventListener('touchstart', handlePointerDown, {passive: false});
+    canvas.addEventListener('touchmove', handlePointerMove, {passive: false});
+    canvas.addEventListener('touchend', handlePointerUp);
+
+    // Controls Logic
+    function selectInclusion(inc) {
+        selectedInclusion = inc;
+        
+        // Enable controls
+        rotationInput.disabled = false;
+        scaleInput.disabled = false;
+        deleteBtn.disabled = false;
+
+        // Update UI values
+        rotationInput.value = inc.rotation;
+        scaleInput.value = inc.scale;
+        rotValDisplay.textContent = Math.round(inc.rotation);
+        scaleValDisplay.textContent = inc.scale.toFixed(1);
+    }
+
+    function deselectAll() {
+        selectedInclusion = null;
+        rotationInput.disabled = true;
+        scaleInput.disabled = true;
+        deleteBtn.disabled = true;
+        
+        rotationInput.value = 0;
+        scaleInput.value = 1;
+        rotValDisplay.textContent = "0";
+        scaleValDisplay.textContent = "1.0";
+    }
+
+    rotationInput.addEventListener('input', (e) => {
+        if (selectedInclusion) {
+            selectedInclusion.rotation = parseInt(e.target.value);
+            rotValDisplay.textContent = selectedInclusion.rotation;
+            render();
+        }
+    });
+
+    scaleInput.addEventListener('input', (e) => {
+        if (selectedInclusion) {
+            selectedInclusion.scale = parseFloat(e.target.value);
+            scaleValDisplay.textContent = selectedInclusion.scale.toFixed(1);
+            render();
+        }
+    });
+
+    deleteBtn.addEventListener('click', () => {
+        if (selectedInclusion) {
+            inclusions = inclusions.filter(i => i !== selectedInclusion);
+            deselectAll();
+            render();
+        }
+    });
+
+    clearBtn.addEventListener('click', () => {
+        if(confirm("Clear all inclusions?")) {
+            inclusions = [];
+            deselectAll();
+            render();
+        }
+    });
+
+    saveBtn.addEventListener('click', () => {
+        // Create a temporary link to download the canvas as image
+        const link = document.createElement('a');
+        link.download = 'diamond-grading-report.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    });
+
+    // Initial Draw
+    render();
+
+</script>
+
+</body>
+</html>
