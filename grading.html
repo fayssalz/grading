@@ -44,6 +44,7 @@
             flex-direction: column;
             gap: 20px;
             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            overflow-y: auto;
         }
 
         .tool-section h3 {
@@ -141,8 +142,13 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                height: auto;
+                min-height: 100vh;
+            }
             .main-container {
                 flex-direction: column;
+                overflow: visible;
             }
             .sidebar {
                 width: 100%;
@@ -175,49 +181,70 @@
             <div class="symbol-palette">
                 <!-- Draggable Items -->
                 <div class="symbol-item" draggable="true" data-type="crystal" title="Drag or Click to add">
-                    <div class="symbol-icon" style="border: 2px solid red; border-radius: 50%;"></div>
+                    <svg class="symbol-icon" viewBox="0 0 30 30">
+                        <circle cx="15" cy="15" r="12" fill="none" stroke="red" stroke-width="2"/>
+                    </svg>
                     <small>Crystal</small>
                 </div>
                 <div class="symbol-item" draggable="true" data-type="feather" title="Drag or Click to add">
-                    <div class="symbol-icon" style="background: linear-gradient(45deg, transparent 45%, red 45%, red 55%, transparent 55%);"></div>
+                    <svg class="symbol-icon" viewBox="0 0 30 30">
+                        <path d="M5 5 Q15 10 25 25 M5 5 L8 8 M12 12 L15 15 M20 20 L23 23" fill="none" stroke="red" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
                     <small>Feather</small>
                 </div>
                 <div class="symbol-item" draggable="true" data-type="cloud" title="Drag or Click to add">
-                    <div class="symbol-icon" style="border: 2px dotted red; border-radius: 50%;"></div>
+                    <svg class="symbol-icon" viewBox="0 0 30 30">
+                        <circle cx="15" cy="15" r="12" fill="none" stroke="red" stroke-width="2" stroke-dasharray="3 2"/>
+                    </svg>
                     <small>Cloud</small>
                 </div>
                 <div class="symbol-item" draggable="true" data-type="pinpoint" title="Drag or Click to add">
-                    <div class="symbol-icon" style="background-color: red; border-radius: 50%; width: 10px; height: 10px; margin-top: 10px;"></div>
+                    <svg class="symbol-icon" viewBox="0 0 30 30">
+                        <circle cx="15" cy="15" r="3" fill="red"/>
+                    </svg>
                     <small>Pinpoint</small>
                 </div>
                 <div class="symbol-item" draggable="true" data-type="group_pinpoints" title="Drag or Click to add">
-                    <div class="symbol-icon" style="display: flex; justify-content: center; align-items: center; gap: 2px;">
-                        <div style="width: 4px; height: 4px; background: red; border-radius: 50%;"></div>
-                        <div style="width: 4px; height: 4px; background: red; border-radius: 50%;"></div>
-                        <div style="width: 4px; height: 4px; background: red; border-radius: 50%;"></div>
-                    </div>
+                    <svg class="symbol-icon" viewBox="0 0 30 30">
+                        <circle cx="10" cy="10" r="2" fill="red"/>
+                        <circle cx="20" cy="10" r="2" fill="red"/>
+                        <circle cx="15" cy="18" r="2" fill="red"/>
+                        <circle cx="10" cy="24" r="2" fill="red"/>
+                        <circle cx="22" cy="22" r="2" fill="red"/>
+                    </svg>
                     <small>Group of Pinpoints</small>
                 </div>
                 <div class="symbol-item" draggable="true" data-type="knot" title="Drag or Click to add">
-                    <div class="symbol-icon" style="background-color: red; border-radius: 50%;"></div>
-                    <small>Knot</small>
+                    <svg class="symbol-icon" viewBox="0 0 30 30">
+  <path  d="M15,5 L25,25 L5,25 Z"fill="none" stroke="red" stroke-width="2" stroke-dasharray="3 2"></path>
+  <path  d="M14,12 V21 Z M14,16.5 L17.5,12 Z M14,16.5 L17.5,21 Z" stroke="red"></path>
+</svg>
+                        <small>Knot</small>
                 </div>
                 <div class="symbol-item" draggable="true" data-type="cavity" title="Drag or Click to add">
-                    <div class="symbol-icon" style="border: 2px solid red; background: repeating-linear-gradient(45deg, transparent, transparent 2px, red 2px, red 3px);"></div>
+                    <svg class="symbol-icon" viewBox="0 0 30 30">
+                        <rect x="5" y="5" width="20" height="20" fill="none" stroke="red" stroke-width="2"/>
+                        <path d="M5 5 L25 25 M12 5 L25 18 M5 12 L18 25" stroke="red" stroke-width="1"/>
+                    </svg>
                     <small>Cavity</small>
                 </div>
                 <div class="symbol-item" draggable="true" data-type="chip" title="Drag or Click to add">
-                    <div class="symbol-icon" style="border-bottom: 2px solid red; border-left: 2px solid red; transform: rotate(-45deg); width: 15px; height: 15px; margin-top: 5px;"></div>
+                    <svg class="symbol-icon" viewBox="0 0 30 30">
+                        <path d="M5 10 Q15 25 25 10 Z" fill="none" stroke="red" stroke-width="2"/>
+                    </svg>
                     <small>Chip</small>
                 </div>
                 <div class="symbol-item" draggable="true" data-type="laser_drill" title="Drag or Click to add">
-                    <div class="symbol-icon" style="border: 2px solid red; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <div style="width: 4px; height: 4px; background: red; border-radius: 50%;"></div>
-                    </div>
+                    <svg class="symbol-icon" viewBox="0 0 30 30">
+                        <circle cx="15" cy="15" r="10" fill="none" stroke="red" stroke-width="2"/>
+                        <circle cx="15" cy="15" r="3" fill="red"/>
+                    </svg>
                     <small>Laser Drill Hole</small>
                 </div>
                 <div class="symbol-item" draggable="true" data-type="bearded_girdle" title="Drag or Click to add">
-                    <div class="symbol-icon" style="border-top: 2px dashed red; margin-top: 15px;"></div>
+                    <svg class="symbol-icon" viewBox="0 0 30 30">
+                        <path d="M5 10 L5 20 M10 10 L10 20 M15 10 L15 20 M20 10 L20 20 M25 10 L25 20" stroke="red" stroke-width="2"/>
+                    </svg>
                     <small>Bearded Girdle</small>
                 </div>
             </div>
@@ -273,6 +300,7 @@
     let dragStart = { x: 0, y: 0, val: 0 }; 
     let initialPinchDist = 0;
     let initialPinchAngle = 0;
+    let potentialDeselect = false;
 
     // --- 1. Drawing The Diamond Template (from SVG) ---
     let diamondTemplateImage = null;
@@ -359,7 +387,7 @@
             // Draw Symbol based on type
             ctx.strokeStyle = 'red';
             ctx.fillStyle = 'red';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 2 / this.scale;
 
             switch (this.type) {
                 case 'crystal':
@@ -370,11 +398,15 @@
                 case 'feather':
                     ctx.beginPath();
                     ctx.moveTo(-15, -15);
-                    ctx.bezierCurveTo(-5, -5, 5, 5, 15, 15);
-                    ctx.moveTo(-15, -10);
-                    ctx.lineTo(-5, 0);
-                    ctx.moveTo(5, 10);
-                    ctx.lineTo(15, 20);
+                    ctx.bezierCurveTo(-1, -10, 15, 5, 20, 20);
+                    ctx.moveTo(-15, -15);
+                    ctx.lineTo(-10, -10);
+                    ctx.moveTo(-5, -5);
+                    ctx.lineTo(0, 0);
+                    ctx.moveTo(5, 5);
+                    ctx.lineTo(10, 10);
+                    ctx.moveTo(15, 15);
+                    ctx.lineTo(20, 20);
                     ctx.stroke();
                     break;
                 case 'cloud':
@@ -602,6 +634,7 @@
         // Handle Pinch Start
         if (e.touches && e.touches.length === 2) {
             dragAction = 'pinch';
+            potentialDeselect = false;
             const p1 = getPointerPos({touches: [e.touches[0]]});
             const p2 = getPointerPos({touches: [e.touches[1]]});
             
@@ -611,6 +644,10 @@
             if (selectedInclusion) {
                 dragStart.scale = selectedInclusion.scale;
                 dragStart.rotation = selectedInclusion.rotation;
+                dragStart.centerX = (p1.x + p2.x) / 2;
+                dragStart.centerY = (p1.y + p2.y) / 2;
+                dragStart.incX = selectedInclusion.x;
+                dragStart.incY = selectedInclusion.y;
             }
             return;
         }
@@ -632,6 +669,7 @@
                     dragStart.offsetX = mx - selectedInclusion.x;
                     dragStart.offsetY = my - selectedInclusion.y;
                 }
+                potentialDeselect = false;
                 render();
                 return;
             }
@@ -644,18 +682,24 @@
                 dragAction = 'move';
                 dragStart.offsetX = mx - inclusions[i].x;
                 dragStart.offsetY = my - inclusions[i].y;
+                potentialDeselect = false;
                 render();
                 return;
             }
         }
 
-        deselectAll();
-        render();
+        // Hit nothing
+        if (e.type === 'mousedown') {
+            deselectAll();
+            render();
+        } else {
+            potentialDeselect = true;
+        }
     }
 
     function handlePointerMove(e) {
-        if (!dragAction || !selectedInclusion) return;
         if (e.type === 'touchmove') e.preventDefault();
+        if (!dragAction || !selectedInclusion) return;
 
         // Handle Pinch Move
         if (dragAction === 'pinch' && e.touches && e.touches.length === 2) {
@@ -665,11 +709,17 @@
             const currentDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
             const currentAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
 
+            const currentCenterX = (p1.x + p2.x) / 2;
+            const currentCenterY = (p1.y + p2.y) / 2;
+
             const scaleFactor = currentDist / initialPinchDist;
             const angleDiff = (currentAngle - initialPinchAngle) * 180 / Math.PI;
 
             selectedInclusion.scale = Math.max(0.1, dragStart.scale * scaleFactor);
             selectedInclusion.rotation = dragStart.rotation + angleDiff;
+            
+            selectedInclusion.x = dragStart.incX + (currentCenterX - dragStart.centerX);
+            selectedInclusion.y = dragStart.incY + (currentCenterY - dragStart.centerY);
             
             updateControls();
             render();
@@ -697,6 +747,11 @@
     }
 
     function handlePointerUp(e) {
+        if (potentialDeselect) {
+            deselectAll();
+            render();
+            potentialDeselect = false;
+        }
         dragAction = null;
     }
 
