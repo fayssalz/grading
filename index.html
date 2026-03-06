@@ -165,6 +165,128 @@
                 height: auto;
             }
         }
+
+        /* Accordion Styles */
+        .accordion-item {
+            border-bottom: 1px solid #ddd;
+        }
+        .accordion-item:last-child {
+            border-bottom: none;
+        }
+        .accordion-header {
+            width: 100%;
+            background: #fff;
+            border: none;
+            outline: none;
+            padding: 15px;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        .accordion-header:hover {
+            background-color: #f9f9f9;
+        }
+        .accordion-header.active {
+            background-color: #eef2ff;
+            color: var(--accent-color);
+        }
+        .accordion-header .icon {
+            transition: transform 0.3s ease;
+            font-size: 0.8rem;
+        }
+        .accordion-header.active .icon {
+            transform: rotate(180deg);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #fff;
+        }
+        .accordion-body {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0 5px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 3px;
+        }
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .form-row > div {
+            flex: 1;
+        }
+        .output-list {
+            border: 1px solid #ccc;
+            background: #fafafa;
+            padding: 8px;
+            border-radius: 4px;
+            min-height: 40px;
+            font-size: 0.85rem;
+        }
+        .tag {
+            display: inline-block;
+            background: #e1ecf4;
+            color: #2c3e50;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 0.8rem;
+            border: 1px solid #ccf;
+            cursor: pointer;
+        }
+        .tag:hover {
+            background-color: #d0e1ed;
+        }
+        .tag::after {
+            content: " ×";
+            font-weight: bold;
+            color: #7f8c8d;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        #inclusionsOutput {
+            min-height: 60px;
+            background: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+            color: #555;
+        }
     </style>
 </head>
 <body>
@@ -177,11 +299,19 @@
         <!-- Sidebar: Palette & Controls -->
         <div class="sidebar">
 
-            <div class="tool-section">
-                <h3>Inclusions (Drag to Chart)</h3>
-                <div class="symbol-palette">
-                    <!-- Draggable Items -->
-                    <div class="symbol-item" draggable="true" data-type="crystal" title="Drag or Click to add">
+            <!-- Accordion Item 1: Inclusions -->
+            <div class="accordion-item">
+                <button class="accordion-header">
+                    Inclusions
+                    <span class="icon">▼</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <div class="tool-section">
+                            <h3>Inclusions (Drag to Chart)</h3>
+                            <div class="symbol-palette">
+                                <!-- Draggable Items -->
+                                <div class="symbol-item" draggable="true" data-type="crystal" title="Drag or Click to add">
                         <svg class="symbol-icon" viewBox="0 0 30 30">
                             <circle cx="15" cy="15" r="12" fill="none" stroke="red" stroke-width="2" />
                         </svg>
@@ -255,17 +385,184 @@
                         <small>Bearded Girdle</small>
                     </div>
                 </div>
-            </div>
+                        </div>
 
-            <div class="tool-section">
-                <div class="controls">
-                    <button id="delete-btn" class="btn btn-danger" disabled>Delete Selected</button>
+                        <div class="tool-section">
+                            <div class="controls">
+                                <button id="delete-btn" class="btn btn-danger" disabled>Delete Selected</button>
+                            </div>
+                        </div>
+
+                        <div class="tool-section">
+                            <button id="clear-all" class="btn" style="background-color: #7f8c8d;">Clear Chart</button>
+                            <button id="save-btn" class="btn" style="margin-top: 10px;">Download Image</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="tool-section">
-                <button id="clear-all" class="btn" style="background-color: #7f8c8d;">Clear Chart</button>
-                <button id="save-btn" class="btn" style="margin-top: 10px;">Download Image</button>
+            <!-- Accordion Item 2: Stone Details -->
+            <div class="accordion-item">
+                <button class="accordion-header">
+                    Stone Details
+                    <span class="icon">▼</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" id="stoneName" placeholder="Enter Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Stone Number</label>
+                            <input type="text" id="stoneNumber" placeholder="Enter Stone Number">
+                        </div>
+                        <div class="form-group">
+                            <label>Shape and Cut</label>
+                            <input type="text" id="shapeCut" placeholder="e.g. Round Brilliant">
+                        </div>
+                        <div class="form-group">
+                            <label>Carat Weight</label>
+                            <input type="number" id="caratWeight" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Clarity</label>
+                            <select id="clarity">
+                                <option value="FL">FL</option>
+                                <option value="IF">IF</option>
+                                <option value="VVS1">VVS1</option>
+                                <option value="VVS2">VVS2</option>
+                                <option value="VS1">VS1</option>
+                                <option value="VS2">VS2</option>
+                                <option value="SI1">SI1</option>
+                                <option value="SI2">SI2</option>
+                                <option value="I1">I1</option>
+                                <option value="I2">I2</option>
+                                <option value="I3">I3</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Color</label>
+                            <select id="colorSelect"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Fluorescence</label>
+                            <select id="fluorescence">
+                                <option value="None">None</option>
+                                <option value="Faint">Faint</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Strong">Strong</option>
+                                <option value="Very Strong">Very Strong</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Inclusions Output</label>
+                            <div id="inclusionsOutput">No inclusions yet</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordion Item 3: Proportions & Grading -->
+            <div class="accordion-item">
+                <button class="accordion-header">
+                    Proportions & Grading
+                    <span class="icon">▼</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        
+                        <div class="section-title">Measurements (mm)</div>
+                        <div class="form-row">
+                            <div><label>Max Diam</label><input type="number" step="0.01"></div>
+                            <div><label>Min Diam</label><input type="number" step="0.01"></div>
+                        </div>
+                        <div class="form-row">
+                            <div><label>Avg Diam</label><input type="number" step="0.01"></div>
+                            <div><label>Height</label><input type="number" step="0.01"></div>
+                        </div>
+
+                        <div class="section-title">Proportions</div>
+                        
+                        <div class="form-row">
+                            <div style="flex: 2;"><label>Total Depth %</label><input type="number" step="0.1"></div>
+                            <div style="flex: 1;"><label>Grade</label><input type="text"></div>
+                        </div>
+                        <div class="form-row">
+                            <div style="flex: 2;"><label>Table Size %</label><input type="number" step="1"></div>
+                            <div style="flex: 1;"><label>Grade</label><input type="text"></div>
+                        </div>
+                        <div class="form-row">
+                            <div style="flex: 2;"><label>Pavilion Depth %</label><input type="number" step="0.1"></div>
+                            <div style="flex: 1;"><label>Grade</label><input type="text"></div>
+                        </div>
+                        <div class="form-row">
+                            <div style="flex: 2;"><label>Girdle Thick %</label><input type="number" step="0.1"></div>
+                            <div style="flex: 1;"><label>Grade</label><input type="text"></div>
+                        </div>
+                        <div class="form-row">
+                            <div style="flex: 2;"><label>Crown Height %</label><input type="number" step="0.1"></div>
+                            <div style="flex: 1;"><label>Grade</label><input type="text"></div>
+                        </div>
+                        <div class="form-row">
+                            <div style="flex: 2;"><label>Crown Angle (°)</label><input type="number" step="0.1"></div>
+                            <div style="flex: 1;"><label>Grade</label><input type="text"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Final Proportion Grade</label>
+                            <select>
+                                <option value="">Select...</option>
+                                <option>Excellent</option>
+                                <option>Very Good</option>
+                                <option>Good</option>
+                                <option>Fair</option>
+                                <option>Poor</option>
+                            </select>
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
+
+                        <div class="section-title">Polish (Blemishes)</div>
+                        <div class="form-group">
+                            <label>Blemishes List</label>
+                            <div id="blemishesOutput" class="output-list" style="color:#777; font-style:italic;">No blemishes yet</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Polish Grade</label>
+                            <select>
+                                <option value="">Select...</option>
+                                <option>Excellent</option>
+                                <option>Very Good</option>
+                                <option>Good</option>
+                                <option>Fair</option>
+                                <option>Poor</option>
+                            </select>
+                        </div>
+
+                        <div class="section-title">Symmetry</div>
+                        <div class="form-group">
+                            <label>Symmetry Variations</label>
+                            <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                                <input type="text" id="symVarInput" placeholder="Add variation..." style="flex:1;">
+                                <button id="addSymVarBtn" class="btn" style="width: auto; margin:0; padding: 0 10px;">+</button>
+                            </div>
+                            <div id="symmetryOutput" class="output-list"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Symmetry Grade</label>
+                            <select>
+                                <option value="">Select...</option>
+                                <option>Excellent</option>
+                                <option>Very Good</option>
+                                <option>Good</option>
+                                <option>Fair</option>
+                                <option>Poor</option>
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -295,6 +592,111 @@
         let initialPinchDist = 0;
         let initialPinchAngle = 0;
         let potentialDeselect = false;
+
+        // --- Accordion Logic ---
+        const accHeaders = document.querySelectorAll('.accordion-header');
+
+        // Initialize first one open
+        if (accHeaders.length > 0) {
+            const firstHeader = accHeaders[0];
+            const firstContent = firstHeader.nextElementSibling;
+            firstHeader.classList.add('active');
+            firstContent.style.maxHeight = firstContent.scrollHeight + "px";
+        }
+
+        accHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                const isActive = header.classList.contains('active');
+
+                // Close others
+                document.querySelectorAll('.accordion-header').forEach(otherHeader => {
+                    if (otherHeader !== header) {
+                        otherHeader.classList.remove('active');
+                        otherHeader.nextElementSibling.style.maxHeight = null;
+                    }
+                });
+
+                // Toggle current
+                if (isActive) {
+                    header.classList.remove('active');
+                    content.style.maxHeight = null;
+                } else {
+                    header.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        });
+
+        // --- Form Logic ---
+        // Populate Color Dropdown
+        const colorSelect = document.getElementById('colorSelect');
+        for (let i = 68; i <= 90; i++) { // ASCII D to Z
+            const letter = String.fromCharCode(i);
+            const opt = document.createElement('option');
+            opt.value = letter;
+            opt.textContent = letter;
+            colorSelect.appendChild(opt);
+        }
+
+        // --- Symmetry Variations Logic ---
+        const symInput = document.getElementById('symVarInput');
+        const symBtn = document.getElementById('addSymVarBtn');
+        const symList = document.getElementById('symmetryOutput');
+        
+        symBtn.addEventListener('click', () => {
+            const val = symInput.value.trim();
+            if(val) {
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.textContent = val;
+                tag.onclick = () => tag.remove(); // Click to remove
+                symList.appendChild(tag);
+                symInput.value = '';
+            }
+        });
+
+        function updateInclusionsOutput() {
+            const output = document.getElementById('inclusionsOutput');
+            if (!output) return;
+
+            const text = inclusions.map(inc => {
+                // 1. Determine View (Crown vs Pavilion)
+                // Crown Center: 200, 300. Pavilion Center: 600, 300.
+                const isCrown = inc.x < 400;
+                const centerX = isCrown ? 200 : 600;
+                const centerY = 300;
+
+                // 2. Calculate Vector from Center
+                // Invert X for Pavilion to fix 3/9 o'clock orientation
+                const dx = isCrown ? (inc.x - centerX) : (centerX - inc.x);
+                const dy = inc.y - centerY;
+
+                // 3. Calculate Clock Position
+                // atan2 returns angle from X-axis (3 o'clock). Y is down.
+                let angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
+                // Adjust so 12 o'clock is 0 (or 360)
+                let clockAngle = angleDeg + 90;
+                if (clockAngle < 0) clockAngle += 360;
+                
+                let clock = Math.round(clockAngle / 30);
+                if (clock === 0) clock = 12;
+
+                // 4. Determine Table vs Bezel (Crown only)
+                // Diamond Radius = (160 * 1.8) / 2 = 144
+                // Table is 54% of radius
+                const radius = 144;
+                const tableRadius = radius * 0.54;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                let locationStr = isCrown ? ((dist <= tableRadius) ? "Table" : "Bezel") : "Pavilion";
+
+                // Format: feather Table@6
+                return `${inc.type} ${locationStr}@${clock}`;
+            }).join(', ');
+
+            output.textContent = text || "No inclusions yet";
+        }
 
         // --- 1. Drawing The Diamond Template (from SVG) ---
         let diamondTemplateImage = null;
@@ -612,6 +1014,7 @@
             const newInclusion = new Inclusion(x, y, type);
             inclusions.push(newInclusion);
             selectInclusion(newInclusion);
+            updateInclusionsOutput();
             render();
         }
 
@@ -724,6 +1127,7 @@
                 selectedInclusion.x = dragStart.incX + (currentCenterX - dragStart.centerX);
                 selectedInclusion.y = dragStart.incY + (currentCenterY - dragStart.centerY);
 
+                updateInclusionsOutput();
                 render();
                 return;
             }
@@ -744,6 +1148,7 @@
                 selectedInclusion.scale = Math.max(0.1, dragStart.val * scaleFactor);
             }
 
+            updateInclusionsOutput();
             render();
         }
 
@@ -787,6 +1192,7 @@
             if (selectedInclusion) {
                 inclusions = inclusions.filter(i => i !== selectedInclusion);
                 deselectAll();
+                updateInclusionsOutput();
                 render();
             }
         }
@@ -799,6 +1205,7 @@
             if (confirm("Clear all inclusions?")) {
                 inclusions = [];
                 deselectAll();
+                updateInclusionsOutput();
                 render();
             }
         });

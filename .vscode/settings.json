@@ -1,5 +1,5 @@
 {
-    "livePreview.hostIP": "127.0.0.1",
+    "livePreview.hostIP": "192.168.22.211",
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "livePreview.httpHeaders": {
         "Accept-Ranges": "bytes"
