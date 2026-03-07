@@ -1,8 +1,9 @@
 {
-    "livePreview.hostIP": "127.0.0.1",
+    "livePreview.hostIP": "192.168.8.128",
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "livePreview.httpHeaders": {
         "Accept-Ranges": "bytes"
     },
-    "vscode-edge-devtools.hostname": "192.168.8.128"
+    "vscode-edge-devtools.hostname": "192.168.8.128",
+    "vscode-edge-devtools.browserFlavor": "Default"
 }
