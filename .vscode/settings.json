@@ -5,5 +5,9 @@
         "Accept-Ranges": "bytes"
     },
     "vscode-edge-devtools.hostname": "192.168.8.128",
-    "vscode-edge-devtools.browserFlavor": "Default"
+    "vscode-edge-devtools.browserFlavor": "Default",
+    "Codegeex.Chat.LanguagePreference": "English",
+    "Codegeex.Comment.LanguagePreference": "English",
+    "Codegeex.CommitMessage.LanguagePreference": "English",
+    "Codegeex.RepoIndex": true
 }

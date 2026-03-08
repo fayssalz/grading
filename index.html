@@ -25,7 +25,7 @@
         header {
             background-color: var(--primary-color);
             color: white;
-            padding: 1rem;
+            
             text-align: center;
         }
 
@@ -37,13 +37,14 @@
 
         /* Sidebar / Palette */
         .sidebar {
-            width: 250px;
+            width: 30%;
+            min-width: 200px;
             background-color: var(--panel-bg);
             border-right: 1px solid #ddd;
-            padding: 20px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 10px;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
             overflow-y: auto;
         }
@@ -89,7 +90,7 @@
             flex: 1;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: start;
             background-color: #e0e0e0;
             position: relative;
         }
@@ -159,6 +160,7 @@
             .canvas-area {
                 order: 1;
                 padding: 10px;
+                flex: none;
             }
             canvas {
                 width: 100%;
@@ -210,10 +212,9 @@
             background-color: #fff;
         }
         .accordion-body {
-            padding: 15px;
+            padding: 5px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
         }
         .section-title {
             font-size: 0.9rem;
@@ -234,7 +235,7 @@
         .output-list {
             border: 1px solid #ccc;
             background: #fafafa;
-            padding: 8px;
+            padding: 5px;
             border-radius: 4px;
             min-height: 40px;
             font-size: 0.85rem;
@@ -258,6 +259,20 @@
             font-weight: bold;
             color: #7f8c8d;
         }
+        .predefined-tag {
+            display: inline-block;
+            background: #f0f0f0;
+            color: #333;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 0.8rem;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        .predefined-tag:hover {
+            background-color: #dcdcdc;
+        }
 
         /* Form Styles */
         .form-group {
@@ -269,7 +284,7 @@
             font-weight: 600;
             font-size: 0.9rem;
         }
-        .form-group input, .form-group select {
+        .form-group input, .form-group select, .form-row select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
@@ -287,119 +302,101 @@
             word-wrap: break-word;
             color: #555;
         }
+
+        /* Context Menu Styles */
+        .context-menu {
+            position: fixed;
+            z-index: 1000;
+            background: var(--panel-bg);
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            display: none; /* Hidden by default */
+            font-size: 0.9rem;
+            min-width: 180px;
+        }
+        .context-menu ul {
+            list-style: none;
+            margin: 0;
+            padding: 5px 0;
+        }
+        .context-menu li {
+            padding: 8px 15px;
+            cursor: pointer;
+            position: relative;
+        }
+        .context-menu li:hover {
+            background-color: #eef;
+            color: var(--accent-color);
+        }
+        .context-menu .has-submenu::after {
+            content: '▶';
+            position: absolute;
+            right: 10px;
+            font-size: 0.7rem;
+            color: #777;
+        }
+        .context-menu .submenu {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: -5px; /* Align with parent li padding */
+            background: var(--panel-bg);
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+        .context-menu li:hover > .submenu {
+            display: block;
+        }
+
+        /* Canvas Controls */
+        .canvas-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        .canvas-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            width: 40px;
+            height: 40px;
+        }
+        .canvas-btn:hover {
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .canvas-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: #555;
+        }
+        #delete-btn svg { fill: #7f8c8d; }
+        #delete-btn:hover svg { fill: #e74c3c; }
+        #delete-btn:disabled { opacity: 0.5; cursor: default; }
+        #delete-btn:disabled:hover svg { fill: #7f8c8d; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Diamond Grading Report</h1>
+        <h3>Diamond Grading Report</h3>
     </header>
 
     <div class="main-container">
         <!-- Sidebar: Palette & Controls -->
         <div class="sidebar">
-
-            <!-- Accordion Item 1: Inclusions -->
-            <div class="accordion-item">
-                <button class="accordion-header">
-                    Inclusions
-                    <span class="icon">▼</span>
-                </button>
-                <div class="accordion-content">
-                    <div class="accordion-body">
-                        <div class="tool-section">
-                            <h3>Inclusions (Drag to Chart)</h3>
-                            <div class="symbol-palette">
-                                <!-- Draggable Items -->
-                                <div class="symbol-item" draggable="true" data-type="crystal" title="Drag or Click to add">
-                        <svg class="symbol-icon" viewBox="0 0 30 30">
-                            <circle cx="15" cy="15" r="12" fill="none" stroke="red" stroke-width="2" />
-                        </svg>
-                        <small>Crystal</small>
-                    </div>
-                    <div class="symbol-item" draggable="true" data-type="feather" title="Drag or Click to add">
-                        <svg class="symbol-icon" viewBox="0 0 30 30">
-                            <path d="M5 5 Q15 10 25 25 M5 5 L8 8 M12 12 L15 15 M20 20 L23 23" fill="none" stroke="red"
-                                stroke-width="2" stroke-linecap="round" />
-                        </svg>
-                        <small>Feather</small>
-                    </div>
-                    <div class="symbol-item" draggable="true" data-type="cloud" title="Drag or Click to add">
-                        <svg class="symbol-icon" viewBox="0 0 30 30">
-                            <circle cx="15" cy="15" r="12" fill="none" stroke="red" stroke-width="2"
-                                stroke-dasharray="3 2" />
-                        </svg>
-                        <small>Cloud</small>
-                    </div>
-                    <div class="symbol-item" draggable="true" data-type="pinpoint" title="Drag or Click to add">
-                        <svg class="symbol-icon" viewBox="0 0 30 30">
-                            <circle cx="15" cy="15" r="3" fill="red" />
-                        </svg>
-                        <small>Pinpoint</small>
-                    </div>
-                    <div class="symbol-item" draggable="true" data-type="group_pinpoints" title="Drag or Click to add">
-                        <svg class="symbol-icon" viewBox="0 0 30 30">
-                            <circle cx="10" cy="10" r="2" fill="red" />
-                            <circle cx="20" cy="10" r="2" fill="red" />
-                            <circle cx="15" cy="18" r="2" fill="red" />
-                            <circle cx="10" cy="24" r="2" fill="red" />
-                            <circle cx="22" cy="22" r="2" fill="red" />
-                        </svg>
-                        <small>Group of Pinpoints</small>
-                    </div>
-                    <div class="symbol-item" draggable="true" data-type="knot" title="Drag or Click to add">
-                        <svg class="symbol-icon" viewBox="0 0 30 30">
-                            <rect x="5" y="5" width="20" height="20" fill="none" stroke="red" stroke-width="2" />
-                        </svg>
-                        <small>Knot</small>
-                    </div>
-                    <div class="symbol-item" draggable="true" data-type="cavity" title="Drag or Click to add">
-                        <svg class="symbol-icon" viewBox="0 0 30 30">
-                            <defs>
-                                <pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse"
-                                    patternTransform="rotate(45)">
-                                    <line x1="0" y1="0" x2="0" y2="4" stroke="red" stroke-width="1" />
-                                </pattern>
-                            </defs>
-                            <circle cx="15" cy="15" r="12" fill="url(#hatch)" stroke="green" stroke-width="1" />
-                        </svg>
-                        <small>Cavity</small>
-                    </div>
-                    <div class="symbol-item" draggable="true" data-type="chip" title="Drag or Click to add">
-                        <svg class="symbol-icon" viewBox="0 0 30 30">
-                         <path fill="none" stroke="red" d="M5,5 L15,20 L30,5"></path>    
-                        </svg>
-                        <small>Chip</small>
-                    </div>
-                    <div class="symbol-item" draggable="true" data-type="laser_drill" title="Drag or Click to add">
-                        <svg class="symbol-icon" viewBox="0 0 30 30">
-                            <circle cx="15" cy="15" r="6" fill="none" stroke="green" stroke-width="1" />
-                            <circle cx="15" cy="15" r="3" fill="red" />
-                        </svg>
-                        <small>Laser Drill Hole</small>
-                    </div>
-                    <div class="symbol-item" draggable="true" data-type="bearded_girdle" title="Drag or Click to add">
-                        <svg class="symbol-icon" viewBox="0 0 30 30">
-                            <path d="M 2 15 Q 15 25 28 15" fill="none" stroke="red" stroke-width="7" stroke-dasharray="1 3" />
-                        </svg>
-                        <small>Bearded Girdle</small>
-                    </div>
-                </div>
-                        </div>
-
-                        <div class="tool-section">
-                            <div class="controls">
-                                <button id="delete-btn" class="btn btn-danger" disabled>Delete Selected</button>
-                            </div>
-                        </div>
-
-                        <div class="tool-section">
-                            <button id="clear-all" class="btn" style="background-color: #7f8c8d;">Clear Chart</button>
-                            <button id="save-btn" class="btn" style="margin-top: 10px;">Download Image</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Accordion Item 2: Stone Details -->
             <div class="accordion-item">
@@ -409,51 +406,69 @@
                 </button>
                 <div class="accordion-content">
                     <div class="accordion-body">
-                        <div class="form-group">
-                            <label>Name</label>
-                            <input type="text" id="stoneName" placeholder="Enter Name">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 3;">
+                                <label>Name</label>
+                                <input type="text" id="studentName" placeholder="Enter Name">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Stone Number</label>
+                                <input type="text" id="stoneNumber" placeholder="Enter Stone Number">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Stone Number</label>
-                            <input type="text" id="stoneNumber" placeholder="Enter Stone Number">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 3;">
+                                <label>Shape and Cut</label>
+                                <select id="shapeCut">
+                                    <option value="Round Brilliant">Round Brilliant</option>
+                                    <option value="Oval">Oval Brilliant</option>
+                                    <option value="Princess">Princess</option>
+                                    <option value="Pear">Pear Brilliant</option>
+                                    <option value="Cushion">Cushion Brilliant</option>
+                                    <option value="Emerald">Emerald Step</option>
+                                    <option value="baguette">Baguette Step</option>
+                                    <option value="Radiant">Radiant</option>
+                                    <option value="Marquise">Marquise Brilliant</option>
+                                    <option value="Asscher">Asscher</option>
+                                    <option value="Heart">Heart Brilliant</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Carat Weight</label>
+                                <input type="number" id="caratWeight" step="0.01" placeholder="0.00">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Shape and Cut</label>
-                            <input type="text" id="shapeCut" placeholder="e.g. Round Brilliant">
-                        </div>
-                        <div class="form-group">
-                            <label>Carat Weight</label>
-                            <input type="number" id="caratWeight" step="0.01" placeholder="0.00">
-                        </div>
-                        <div class="form-group">
-                            <label>Clarity</label>
-                            <select id="clarity">
-                                <option value="FL">FL</option>
-                                <option value="IF">IF</option>
-                                <option value="VVS1">VVS1</option>
-                                <option value="VVS2">VVS2</option>
-                                <option value="VS1">VS1</option>
-                                <option value="VS2">VS2</option>
-                                <option value="SI1">SI1</option>
-                                <option value="SI2">SI2</option>
-                                <option value="I1">I1</option>
-                                <option value="I2">I2</option>
-                                <option value="I3">I3</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Color</label>
-                            <select id="colorSelect"></select>
-                        </div>
-                        <div class="form-group">
-                            <label>Fluorescence</label>
-                            <select id="fluorescence">
-                                <option value="None">None</option>
-                                <option value="Faint">Faint</option>
-                                <option value="Medium">Medium</option>
-                                <option value="Strong">Strong</option>
-                                <option value="Very Strong">Very Strong</option>
-                            </select>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Clarity</label>
+                                <select id="clarity">
+                                    <option value="FL">FL</option>
+                                    <option value="IF">IF</option>
+                                    <option value="VVS1">VVS1</option>
+                                    <option value="VVS2">VVS2</option>
+                                    <option value="VS1">VS1</option>
+                                    <option value="VS2">VS2</option>
+                                    <option value="SI1">SI1</option>
+                                    <option value="SI2">SI2</option>
+                                    <option value="I1">I1</option>
+                                    <option value="I2">I2</option>
+                                    <option value="I3">I3</option>
+                                </select>
+                            </div>
+                            <div class="form-group"> <!-- Input field for color information -->
+                                <label>Color</label>
+                                <select id="colorSelect"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Fluorescence</label>
+                                <select id="fluorescence">
+                                    <option value="None">None</option>
+                                    <option value="Very Slight">Very Slight</option>
+                                    <option value="Slight">Slight</option>
+                                    <option value="Strong">Strong</option>
+                                    <option value="Very Strong">Very Strong</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Inclusions Output</label>
@@ -474,45 +489,94 @@
                         
                         <div class="section-title">Measurements (mm)</div>
                         <div class="form-row">
-                            <div><label>Max Diam</label><input type="number" step="0.01"></div>
-                            <div><label>Min Diam</label><input type="number" step="0.01"></div>
+                            <div class="form-group"><label>Max Diam</label><input type="number" step="0.01" id="measMax"></div>
+                            <div class="form-group"><label>Min Diam</label><input type="number" step="0.01" id="measMin"></div>
                         </div>
                         <div class="form-row">
-                            <div><label>Avg Diam</label><input type="number" step="0.01"></div>
-                            <div><label>Height</label><input type="number" step="0.01"></div>
+                            <div class="form-group"><label>Avg Diam</label><input type="number" step="0.01" id="measAvg"></div>
+                            <div class="form-group"><label>Height</label><input type="number" step="0.01" id="measHeight"></div>
                         </div>
 
                         <div class="section-title">Proportions</div>
                         
                         <div class="form-row">
-                            <div style="flex: 2;"><label>Total Depth %</label><input type="number" step="0.1"></div>
-                            <div style="flex: 1;"><label>Grade</label><input type="text"></div>
+                            <div class="form-group" style="flex: 2;"><label>Total Depth %</label><input type="number" step="0.1" id="propDepth"></div>
+                            <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeDepth">
+                                <option value="">Select...</option>
+                                <option>Ideal</option>
+                                <option>Excellent</option>
+                                <option>Very Good</option>
+                                <option>Good</option>
+                                <option>Fair</option>
+                                <option>Poor</option>
+                            </select></div>
                         </div>
                         <div class="form-row">
-                            <div style="flex: 2;"><label>Table Size %</label><input type="number" step="1"></div>
-                            <div style="flex: 1;"><label>Grade</label><input type="text"></div>
+                            <div class="form-group" style="flex: 2;"><label>Table Size %</label><input type="number" step="1" id="propTable"></div>
+                            <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeTable">
+                                <option value="">Select...</option>
+                                <option>Ideal</option>
+                                <option>Excellent</option>
+                                <option>Very Good</option>
+                                <option>Good</option>
+                                <option>Fair</option>
+                                <option>Poor</option>
+                            </select></div>
                         </div>
                         <div class="form-row">
-                            <div style="flex: 2;"><label>Pavilion Depth %</label><input type="number" step="0.1"></div>
-                            <div style="flex: 1;"><label>Grade</label><input type="text"></div>
+                            <div class="form-group" style="flex: 2;"><label>Pavilion Depth %</label><input type="number" step="0.1" id="propPavilion"></div>
+                            <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradePavilion">
+                                <option value="">Select...</option>
+                                <option>Ideal</option>
+                                <option>Excellent</option>
+                                <option>Very Good</option>
+                                <option>Good</option>
+                                <option>Fair</option>
+                                <option>Poor</option>
+                            </select></div>
                         </div>
                         <div class="form-row">
-                            <div style="flex: 2;"><label>Girdle Thick %</label><input type="number" step="0.1"></div>
-                            <div style="flex: 1;"><label>Grade</label><input type="text"></div>
+                            <div class="form-group" style="flex: 2;"><label>Girdle Thick %</label><input type="number" step="0.1" id="propGirdle"></div>
+                            <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeGirdle">
+                                <option value="">Select...</option>
+                                <option>Ideal</option>
+                                <option>Excellent</option>
+                                <option>Very Good</option>
+                                <option>Good</option>
+                                <option>Fair</option>
+                                <option>Poor</option>
+                            </select></div>
                         </div>
                         <div class="form-row">
-                            <div style="flex: 2;"><label>Crown Height %</label><input type="number" step="0.1"></div>
-                            <div style="flex: 1;"><label>Grade</label><input type="text"></div>
+                            <div class="form-group" style="flex: 2;"><label>Crown Height %</label><input type="number" step="0.1" id="propCrownH"></div>
+                            <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeCrownH">
+                                <option value="">Select...</option>
+                                <option>Ideal</option>
+                                <option>Excellent</option>
+                                <option>Very Good</option>
+                                <option>Good</option>
+                                <option>Fair</option>
+                                <option>Poor</option>
+                            </select></div>
                         </div>
                         <div class="form-row">
-                            <div style="flex: 2;"><label>Crown Angle (°)</label><input type="number" step="0.1"></div>
-                            <div style="flex: 1;"><label>Grade</label><input type="text"></div>
+                            <div class="form-group" style="flex: 2;"><label>Crown Angle (°)</label><input type="number" step="0.1" id="propCrownA"></div>
+                            <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeCrownA">
+                                <option value="">Select...</option>
+                                <option>Ideal</option>
+                                <option>Excellent</option>
+                                <option>Very Good</option>
+                                <option>Good</option>
+                                <option>Fair</option>
+                                <option>Poor</option>
+                            </select></div>
                         </div>
 
                         <div class="form-group">
                             <label>Final Proportion Grade</label>
-                            <select>
+                            <select id="gradeFinalProp">
                                 <option value="">Select...</option>
+                                <option>Ideal</option>
                                 <option>Excellent</option>
                                 <option>Very Good</option>
                                 <option>Good</option>
@@ -530,7 +594,7 @@
                         </div>
                         <div class="form-group">
                             <label>Polish Grade</label>
-                            <select>
+                            <select id="gradePolish">
                                 <option value="">Select...</option>
                                 <option>Excellent</option>
                                 <option>Very Good</option>
@@ -542,16 +606,24 @@
 
                         <div class="section-title">Symmetry</div>
                         <div class="form-group">
-                            <label>Symmetry Variations</label>
-                            <div style="display: flex; gap: 5px; margin-bottom: 5px;">
-                                <input type="text" id="symVarInput" placeholder="Add variation..." style="flex:1;">
-                                <button id="addSymVarBtn" class="btn" style="width: auto; margin:0; padding: 0 10px;">+</button>
+                            <label>Symmetry Variations (Click to add)</label>
+                            <div id="predefinedSymmetryTags" style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">
+                                <span class="predefined-tag">Off-center table</span>
+                                <span class="predefined-tag">Off-center culet</span>
+                                <span class="predefined-tag">Irregular Girdle</span>
+                                <span class="predefined-tag">Facets out of alignment</span>
+                                <span class="predefined-tag">Open facets</span>
+                                <span class="predefined-tag">Irregular facets</span>
+                                <span class="predefined-tag">Stone not round</span>
+                                <span class="predefined-tag">Extra Facet</span>
+                                <span class="predefined-tag">Natural</span>
                             </div>
+                            <label>Selected Variations</label>
                             <div id="symmetryOutput" class="output-list"></div>
                         </div>
                         <div class="form-group">
                             <label>Symmetry Grade</label>
-                            <select>
+                            <select id="gradeSym">
                                 <option value="">Select...</option>
                                 <option>Excellent</option>
                                 <option>Very Good</option>
@@ -564,12 +636,41 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Submit Button -->
+            <div style="padding: 15px; border-top: 1px solid #ddd;">
+                <button id="submit-grading-btn" class="btn" style="background-color: #27ae60; font-weight:bold;">Submit Grading Report</button>
+            </div>
         </div>
 
         <!-- Main Canvas -->
         <div class="canvas-area">
-            <canvas id="gradingCanvas" width="800" height="600"></canvas>
+            <canvas id="gradingCanvas" width="800" height="460"></canvas>
+            <div class="canvas-controls">
+                <button id="delete-btn" class="canvas-btn" title="Delete Selected" disabled>
+                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </button>
+                <button id="clear-all" class="canvas-btn" title="Clear Chart">
+                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                </button>
+                <button id="save-btn" class="canvas-btn" title="Download Image">
+                    <svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                </button>
+            </div>
         </div>
+    </div>
+
+    <div id="contextMenu" class="context-menu">
+        <ul>
+            <li class="has-submenu" style="color: red;">Inclusions
+                <ul class="submenu">
+                </ul>
+            </li>
+            <li class="has-submenu" style="color: green;">Blemishes
+                <ul class="submenu">
+                </ul>
+            </li>
+        </ul>
     </div>
 
     <script>
@@ -584,25 +685,24 @@
         const clearBtn = document.getElementById('clear-all');
         const saveBtn = document.getElementById('save-btn');
 
+        // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwJ7C-rzlP5O-7PrbhmwHfkfqtjXIo97kFBS6jZk0D1y0I-a5xmgrPb2LbJIx8DmqZ/exec";
+
         // State
         let inclusions = []; // Array to store inclusion objects
         let selectedInclusion = null;
         let dragAction = null; // 'move', 'rotate', 'resize', 'pinch'
         let dragStart = { x: 0, y: 0, val: 0 };
         let initialPinchDist = 0;
-        let initialPinchAngle = 0;
+        let initialPinchAngle = 0; 
         let potentialDeselect = false;
+        let longPressTimer;
+        const LONG_PRESS_DURATION = 500;
+        let touchStartPos = { x: 0, y: 0 };
+        let contextMenuPos = { x: 0, y: 0 };
 
         // --- Accordion Logic ---
         const accHeaders = document.querySelectorAll('.accordion-header');
-
-        // Initialize first one open
-        if (accHeaders.length > 0) {
-            const firstHeader = accHeaders[0];
-            const firstContent = firstHeader.nextElementSibling;
-            firstHeader.classList.add('active');
-            firstContent.style.maxHeight = firstContent.scrollHeight + "px";
-        }
 
         accHeaders.forEach(header => {
             header.addEventListener('click', () => {
@@ -628,6 +728,86 @@
             });
         });
 
+        // Open first accordion by default
+        if (accHeaders.length > 0) {
+            accHeaders[0].click();
+        }
+
+        // --- Context Menu Logic ---
+        const contextMenu = document.getElementById('contextMenu');
+        const inclusionTypes = [
+            { 
+                name: 'Crystal', 
+                subtypes: [
+                    { name: 'Crystal', type: 'crystal', color: 'red' },
+                    { name: 'Dark Crystal', type: 'dark_crystal', color: 'red' }
+                ]
+            },
+            { name: 'Feather', type: 'feather', color: 'red' },
+            { 
+                name: 'Cloud', 
+                subtypes: [
+                    { name: 'Cloud', type: 'cloud', color: 'red' },
+                    { name: 'Linear Cloud', type: 'linear_cloud', color: 'red' }
+                ]
+            },
+            { name: 'Needle', type: 'needle', color: 'red' },
+            { name: 'Pinpoint', type: 'pinpoint', color: 'red' },
+            { name: 'Group of Pinpoints', type: 'group_pinpoints', color: 'red' },
+            { name: 'Knot', type: 'knot', color: 'red' },
+            { name: 'Cavity', type: 'cavity', color: 'red' },
+            { name: 'Chip', type: 'chip', color: 'red' },
+            { name: 'Indented Natural', type: 'indented_natural', color: 'red' },
+            { name: 'Percussion Mark', type: 'percussion_mark', color: 'red' },
+            { name: 'Etch Channel', type: 'etch_channel', color: 'red' },
+            { name: 'Twinning Wisp', type: 'twinning_wisp', color: 'red' },
+            { name: 'Laser Drill Hole', type: 'laser_drill', color: 'red' },
+            { name: 'Bearded Girdle', type: 'bearded_girdle', color: 'red' },
+        ];
+        const blemishTypes = [
+            { name: 'Extra Facet', type: 'extra_facet', color: 'green' },
+            { name: 'Natural', type: 'natural', color: 'green' },
+            { name: 'Nick', type: 'nick', color: 'green' },
+            { name: 'Abrasion', type: 'abrasion', color: 'green' },
+            { name: 'Scratch', type: 'scratch', color: 'green' },
+            { name: 'Burn Mark', type: 'burn_mark', color: 'green' },
+            { name: 'Polish Lines', type: 'polish_lines', color: 'green' },
+        ];
+
+        function populateContextMenu() {
+            const inclusionsList = contextMenu.querySelector('.has-submenu:nth-child(1) .submenu');
+            const blemishesList = contextMenu.querySelector('.has-submenu:nth-child(2) .submenu');
+
+            const createMenuItem = (item) => {
+                const li = document.createElement('li');
+                li.textContent = item.name;
+                
+                if (item.subtypes) {
+                    li.classList.add('has-submenu');
+                    const ul = document.createElement('ul');
+                    ul.className = 'submenu';
+                    item.subtypes.forEach(sub => ul.appendChild(createMenuItem(sub)));
+                    li.appendChild(ul);
+                } else {
+                    li.dataset.type = item.type;
+                    li.dataset.color = item.color;
+                }
+                return li;
+            };
+
+            inclusionTypes.forEach(item => inclusionsList.appendChild(createMenuItem(item)));
+            blemishTypes.forEach(item => blemishesList.appendChild(createMenuItem(item)));
+
+            contextMenu.addEventListener('click', e => {
+                if (e.target.tagName === 'LI' && e.target.dataset.type) {
+                    const type = e.target.dataset.type;
+                    const color = e.target.dataset.color || 'red';
+                    addInclusion(contextMenuPos.x, contextMenuPos.y, type, color);
+                    contextMenu.style.display = 'none';
+                }
+            });
+        }
+
         // --- Form Logic ---
         // Populate Color Dropdown
         const colorSelect = document.getElementById('colorSelect');
@@ -639,61 +819,201 @@
             colorSelect.appendChild(opt);
         }
 
-        // --- Symmetry Variations Logic ---
-        const symInput = document.getElementById('symVarInput');
-        const symBtn = document.getElementById('addSymVarBtn');
-        const symList = document.getElementById('symmetryOutput');
+        // Clarity Calculation Logic
+        const claritySelect = document.getElementById('clarity');
         
-        symBtn.addEventListener('click', () => {
-            const val = symInput.value.trim();
-            if(val) {
-                const tag = document.createElement('span');
-                tag.className = 'tag';
-                tag.textContent = val;
-                tag.onclick = () => tag.remove(); // Click to remove
-                symList.appendChild(tag);
-                symInput.value = '';
+        // Ranking from lightest to deepest impact
+        const clarityRankings = {
+            'pinpoint': 1,
+            'group_pinpoints': 2,
+            'needle': 3,
+            'linear_cloud': 4,
+            'cloud': 5,
+            'twinning_wisp': 6,
+            'crystal': 7,
+            'dark_crystal': 8,
+            'bearded_girdle': 9,
+            'indented_natural': 10,
+            'etch_channel': 11,
+            'feather': 12,
+            'laser_drill': 13,
+            'knot': 14,
+            'chip': 15,
+            'percussion_mark': 16,
+            'cavity': 17
+        };
+        
+        function updateClarityGrade() {
+            const redInclusions = inclusions.filter(inc => inc.color !== 'green');
+            const greenBlemishes = inclusions.filter(inc => inc.color === 'green');
+
+            // 1. Base Grade Logic
+            if (redInclusions.length === 0) {
+                // No inclusions: FL if no blemishes, IF if blemishes exist
+                claritySelect.value = (greenBlemishes.length === 0) ? 'FL' : 'IF';
+                return;
             }
+
+            let maxScore = 0;
+            let totalScore = 0;
+
+            redInclusions.forEach(inc => {
+                // A. Type Impact
+                const typeScore = clarityRankings[inc.type] || 5;
+
+                // B. Size Impact (1px to 144px+)
+                // Base width is 40. Scale 1 = 40px.
+                const sizePx = 40 * inc.scale;
+                let sizeMult = 1;
+                if (sizePx < 5) sizeMult = 0.2;       // Tiny
+                else if (sizePx < 20) sizeMult = 0.5; // Small
+                else if (sizePx < 50) sizeMult = 1.0; // Medium
+                else if (sizePx < 100) sizeMult = 2.0;// Large
+                else sizeMult = 4.0;                  // Very Large
+
+                // C. Location Impact
+                const isCrown = inc.x < 400;
+                // Centers calibrated to canvas/SVG alignment
+                const centerX = isCrown ? 185 : 616; 
+                const centerY = 240;
+                const dx = inc.x - centerX;
+                const dy = inc.y - centerY;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const radius = 151; 
+
+                let locMult = 1.0;
+                if (isCrown) {
+                    const ratio = dist / radius;
+                    if (ratio <= 0.54) {
+                        // Table (Sacred Area)
+                        locMult = 3.0;
+                    } else if (ratio <= 0.77) {
+                        // Inner Bezel
+                        locMult = 2.0;
+                    } else {
+                        // Outer Bezel
+                        locMult = 1.2;
+                    }
+                } else {
+                    // Pavilion
+                    locMult = 1.0;
+                }
+
+                // D. Color Impact
+                let colorMult = 1.0;
+                if (inc.type === 'dark_crystal') colorMult = 1.5;
+
+                const score = typeScore * sizeMult * locMult * colorMult;
+                
+                if (score > maxScore) maxScore = score;
+                totalScore += score;
+            });
+
+            // Aggregation: Worst inclusion + 50% of others
+            const finalScore = maxScore + (totalScore - maxScore) * 0.5;
+
+            // Map Score to Grade
+            let grade = 'I3';
+            if (finalScore < 4) grade = 'VVS1';
+            else if (finalScore < 5) grade = 'VVS2';
+            else if (finalScore < 8) grade = 'VS1';
+            else if (finalScore < 18) grade = 'VS2';
+            else if (finalScore < 35) grade = 'SI1';
+            else if (finalScore < 60) grade = 'SI2';
+            else if (finalScore < 100) grade = 'I1';
+            else if (finalScore < 200) grade = 'I2';
+
+            claritySelect.value = grade;
+        }
+        // --- Symmetry Variations Logic ---
+        const symList = document.getElementById('symmetryOutput');
+        const predefinedSymTags = document.querySelectorAll('.predefined-tag');
+
+        predefinedSymTags.forEach(predefinedTag => {
+            predefinedTag.addEventListener('click', () => {
+                const val = predefinedTag.textContent;
+
+                // Check if it's already added to prevent duplicates
+                const existingTags = Array.from(symList.querySelectorAll('.tag'));
+                const alreadyExists = existingTags.some(t => t.textContent === val);
+
+                if (!alreadyExists) {
+                    const tag = document.createElement('span');
+                    tag.className = 'tag';
+                    tag.textContent = val;
+                    tag.onclick = () => tag.remove(); // Click to remove
+                    symList.appendChild(tag);
+                }
+            });
         });
+
+        function getInclusionLocationString(inc) {
+            // 1. Determine View (Crown vs Pavilion)
+            const isCrown = inc.x < 400;
+            // 200 is the X-coordinate center of the Crown view, 600 is the X-coordinate center of the Pavilion view
+            const centerX = isCrown ? 185 : 616;
+            const centerY = 240;
+
+            // 2. Calculate Vector from Center
+            // Invert X for Pavilion to fix 3/9 o'clock orientation
+            const dx = isCrown ? (inc.x - centerX) : (centerX - inc.x);
+            const dy = inc.y - centerY;
+
+            // 3. Calculate Clock Position
+            // atan2 returns angle from X-axis (3 o'clock). Y is down.
+            let angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
+            // Adjust so 12 o'clock is 0 (or 360)
+            let clockAngle = angleDeg + 90;
+            if (clockAngle < 0) clockAngle += 360;
+            
+            let clock = Math.round(clockAngle / 30);
+            if (clock === 0) clock = 12;
+
+            // 4. Determine Table vs Bezel (Crown only)
+            // Diamond Radius = (160 * 1.8) / 2 = 144
+            // Table is 54% of radius
+            const radius = 151;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            // Ignore inclusions outside the diamond perimeter
+            if (dist > radius) return null;
+
+            const tableRadius = radius * 0.54;
+
+            let locationStr = isCrown ? ((dist <= tableRadius) ? "Table" : "Bezel") : "Pavilion";
+
+            // Format: feather Table@6
+            return `${inc.type.replace(/_/g, ' ')} ${locationStr}@${clock}`;
+        }
+
+        function updateBlemishesOutput() {
+            const output = document.getElementById('blemishesOutput');
+            if (!output) return;
+
+            const greenBlemishes = inclusions.filter(inc => inc.color === 'green');
+
+            if (greenBlemishes.length === 0) {
+                output.innerHTML = `<span style="color:#777; font-style:italic;">No blemishes yet</span>`;
+                return;
+            }
+
+            const text = greenBlemishes.map(getInclusionLocationString).filter(s => s !== null).join(', ');
+            output.textContent = text;
+        }
+
+        function updateAllOutputs() {
+            updateInclusionsOutput();
+            updateBlemishesOutput();
+            updateClarityGrade();
+        }
 
         function updateInclusionsOutput() {
             const output = document.getElementById('inclusionsOutput');
             if (!output) return;
 
-            const text = inclusions.map(inc => {
-                // 1. Determine View (Crown vs Pavilion)
-                // Crown Center: 200, 300. Pavilion Center: 600, 300.
-                const isCrown = inc.x < 400;
-                const centerX = isCrown ? 200 : 600;
-                const centerY = 300;
+            const redInclusions = inclusions.filter(inc => inc.color !== 'green');
 
-                // 2. Calculate Vector from Center
-                // Invert X for Pavilion to fix 3/9 o'clock orientation
-                const dx = isCrown ? (inc.x - centerX) : (centerX - inc.x);
-                const dy = inc.y - centerY;
-
-                // 3. Calculate Clock Position
-                // atan2 returns angle from X-axis (3 o'clock). Y is down.
-                let angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
-                // Adjust so 12 o'clock is 0 (or 360)
-                let clockAngle = angleDeg + 90;
-                if (clockAngle < 0) clockAngle += 360;
-                
-                let clock = Math.round(clockAngle / 30);
-                if (clock === 0) clock = 12;
-
-                // 4. Determine Table vs Bezel (Crown only)
-                // Diamond Radius = (160 * 1.8) / 2 = 144
-                // Table is 54% of radius
-                const radius = 144;
-                const tableRadius = radius * 0.54;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-
-                let locationStr = isCrown ? ((dist <= tableRadius) ? "Table" : "Bezel") : "Pavilion";
-
-                // Format: feather Table@6
-                return `${inc.type} ${locationStr}@${clock}`;
-            }).join(', ');
+            const text = redInclusions.map(getInclusionLocationString).filter(s => s !== null).join(', ');
 
             output.textContent = text || "No inclusions yet";
         }
@@ -701,13 +1021,10 @@
         // --- 1. Drawing The Diamond Template (from SVG) ---
         let diamondTemplateImage = null;
         const svgTemplateData = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="160" height="345" viewBox="0 240 160 345">
+    <svg xmlns="http://www.w3.org/2000/svg" width="367" height="168">
         <g fill="none" stroke="#aaa" stroke-width="0.75">
-            <path d="M136.892 278.258q10.898 14.884 13.598 33.131 3.149 21.289-5.53 40.978-8.68 19.693-26.518 31.733-15.291 10.318-33.629 12.316t-35.491-4.786q-20.012-7.914-32.729-25.278-12.716-17.361-14.224-38.828-1.293-18.4 6.145-35.282 7.436-16.879 21.886-28.344 16.859-13.376 38.252-15.71t40.74 7.092q16.583 8.079 27.485 22.959l-.816.598q-10.755-14.678-27.112-22.649-19.084-9.297-40.186-6.995T31.029 264.69q-14.253 11.308-21.59 27.961-7.337 16.65-6.062 34.802 1.488 21.177 14.031 38.302t32.285 24.935q16.919 6.692 35.008 4.719 18.089-1.969 33.172-12.15 17.597-11.875 26.158-31.298 8.562-19.424 5.454-40.425-2.663-17.998-13.412-32.681z"/>
-            <path d="m22.921 374.274 6.855-33.189 7.042-18.779 11.72-29.027 8.852-17.885 19.539-28.387 20.082 29.477 19.665 44.924 6.504 19.692 6.454 33.93-33.736-7.005-20.046-5.961-26.882-11.365-18.966-9.393-27.651-19.539 27.469-18.99 18.787-9.754 28.869-11.549 18.775-5.595 32.455-7.377-5.346 34.477-6.685 18.794-11.54 28.307-8.673 18.069-19.714 28.005-20.263-28.185-8.312-17.707-11.361-27.594-6.503-19.509-5.897-34.269 33.536 6.264 20.775 6.324 25.796 11.364 18.782 8.849 27.643 19.535-27.638 19.898-18.609 9.033L76.743 361.7l-19.323 6.321-34.655 7.004zm.999.207-.499-.104-.101-.499 33.869-6.845.101.499-.159-.484 19.277-6.308.158.485-.194-.469 27.924-11.531.194.472-.222-.459 18.556-9.009.223.459-.299-.412 27.024-19.458.298.413-.294.416-27.024-19.096.295-.416-.217.461-18.736-8.828.217-.461-.206.467-25.762-11.35.206-.467-.149.487-20.718-6.305.149-.487-.094.5-32.788-6.125.094-.501.502-.086 5.765 33.508-.502.087.483-.161 6.486 19.457-.483.162.471-.194 11.35 27.563-.471.194.462-.216 8.286 17.655-.462.215.414-.297 19.818 27.563-.414.297-.417-.29 19.276-27.384.418.294-.461-.222 8.647-18.014.46.219-.471-.191 11.529-28.284.472.191-.479-.169 6.665-18.736.479.17-.502-.078 5.224-33.689.503.078.113.496-31.708 7.206-.112-.496.145.489-18.735 5.585-.146-.489.19.473-28.825 11.53-.189-.473.234.451-18.736 9.729-.234-.452.289.419-26.843 18.556-.289-.419.295-.416 27.023 19.095-.294.416.225-.457 18.917 9.368-.226.457.199-.469 26.843 11.35-.199.472.145-.491 19.997 5.945-.145.49.104-.499 32.968 6.845-.104.499-.5.095-6.305-33.15.5-.094-.484.16-6.486-19.636.484-.163-.467.207-19.637-44.859.467-.204-.421.286-19.636-28.824.421-.287.419.289-19.096 27.744-.42-.289.457.226-8.828 17.834-.457-.225.473.191-11.71 29.006-.473-.191.477.178-7.026 18.735-.477-.178.499.104z"/>
-            <path d="m57.359 276.028-9.188-21.978.941-.393 9.188 21.979zm38.726.17 8.286-22.7.958.35-8.287 22.7zm27.139 25.28 21.799-8.287.363.953-21.799 8.287zm-.167 38.919 22.52 9.186-.385.944-22.519-9.189zm-26.198 26.772 9.008 23.599-.953.362-9.008-23.599zm-39.278.554-9.368 23.058-.944-.381 9.368-23.062zm-26.758-26.026-22.339 9.369-.394-.941 22.339-9.369zm-.034-38.373L8.45 293.956l.394-.94 22.339 9.368zm106.387 156.13q10.817 14.772 13.498 32.887 3.127 21.129-5.486 40.678-8.611 19.545-26.316 31.501-15.177 10.244-33.378 12.231-18.203 1.988-35.232-4.739-19.866-7.848-32.496-25.077-12.629-17.229-14.135-38.538-1.292-18.263 6.081-35.024t21.71-28.151q16.726-13.284 37.96-15.616t40.443 7.011q16.467 8.004 27.301 22.767l-.821.603q-10.685-14.559-26.925-22.455-18.945-9.212-39.888-6.914-20.94 2.3-37.436 15.403-14.14 11.231-21.411 27.761t-5.998 34.543q1.486 21.017 13.941 38.006 12.456 16.992 32.048 24.731 16.795 6.636 34.746 4.677t32.918-12.066q17.461-11.787 25.955-31.062 8.494-19.281 5.41-40.119-2.645-17.865-13.313-32.436z"/>
-            <path d="m109.327 490.089 43.508 13.659-45.142 12.9-.14-.49.445-.247 22.563 40.815-40.819-22.467.246-.447.487.15-13.47 43.683-12.998-44.139.489-.145.248.447-40.638 22.659 22.197-40.553.446.244-.156.484L2.822 502.52l44.692-12.434.137.49-.451.238-21.821-41.395 39.374 23.062-.258.438-.484-.157 14.392-44.017 12.435 44.036-.49.138-.244-.446 40.185-21.774-20.663 40.109-.452-.231zm-.884.791 20.184-39.182.454.234.243.447-39.294 21.292-12.153-43.041.489-.138.485.159-14.068 43.027-38.379-22.477.258-.441.45-.237 21.283 40.375-43.666 12.148-.137-.491.156-.485 42.742 13.792-21.644 39.543-.446-.245-.249-.443 39.654-22.111 12.701 43.129-.489.145-.487-.151 13.157-42.663 39.821 21.921-.245.443-.446.248-22.019-39.835 44.123-12.606.14.491-.153.487-41.885-13.153z"/>
-            <path d="M145.3 475.2 L9.3 530.8 M145.1 532.1 L9.7 474.7 M104.9 571.3 L50.2 435.2 M48.7 571.1 L105.9 435.7"/>
+            <path d="m 83.58 10.23 a 75.321 73.978 0 0 1 0 147.946 a 75.321 73.978 0 0 1 0 -147.946 z m -18.723 28.469 l -8.939 -21.679 m 47.665 22.278 l 8.536 -22.191 m 18.303 47.331 l 21.893 -7.898 m -22.495 46.109 l 22.414 9.267 m -48.915 16.741 l 8.741 23.268 m -48.025 -23.166 l -9.63 22.533 m -16.831 -48.395 l -22.446 8.953 m 22.852 -46.646 l -22.232 -9.442 z m -7.334 69.848 l 6.805 -32.337 l 6.991 -18.296 l 11.636 -28.282 l 8.788 -17.425 l 19.398 -27.658 l 19.938 28.72 l 19.523 43.77 l 6.457 19.186 l 6.407 33.059 l -33.493 -6.825 l -19.901 -5.808 l -26.688 -11.073 l -18.829 -9.152 l -27.452 -19.037 l 27.271 -18.503 l 18.652 -9.503 l 28.66 -11.252 l 18.64 -5.452 l 32.221 -7.187 l -5.308 33.591 l -6.636 18.311 l -11.458 27.58 l -8.61 17.605 l -19.571 27.286 l -20.118 -27.461 l -8.252 -17.252 l -11.278 -26.886 l -6.456 -19.007 l -5.855 -33.389 l 33.294 6.103 l 20.625 6.161 l 25.611 11.073 l 18.646 8.621 l 27.443 19.034 l -27.438 19.386 l -18.475 8.801 l -27.754 11.247 l -19.184 6.159 l -34.405 6.824 m 0.992 0.201 z"/>
+            <path d="m 283.795 10.189 a 74.582 73.988 0 0 1 0 147.975 a 74.582 73.988 0 0 1 0 -147.975 z m 31.029 61.089 l 42.859 13.442 l -44.469 12.696 l -0.138 -0.483 l 0.439 -0.243 l 22.227 40.167 l -40.211 -22.11 l 0.242 -0.44 l 0.48 0.148 l -13.269 42.989 l -12.804 -43.438 l 0.481 -0.143 l 0.244 0.44 l -40.032 22.299 l 21.867 -39.909 l 0.439 0.24 l -0.154 0.477 l -43.118 -13.898 l 44.025 -12.237 l 0.135 0.483 l -0.444 0.234 l -21.496 -40.738 l 38.787 22.696 l -0.254 0.431 l -0.476 -0.154 l 14.177 -43.318 l 12.25 43.336 l -0.483 0.136 l -0.241 -0.439 l 39.587 -21.428 l -20.356 39.472 l -0.444 -0.227 m -0.871 0.778 z m 38.904 -16.044 l -138.018 54.873 m 137.815 1.283 l -137.41 -56.649 m 96.613 95.337 l -55.512 -134.321 m -1.522 134.123 l 58.049 -133.63 z"/>
         </g>
     </svg>
     `;
@@ -729,45 +1046,49 @@
             if (diamondTemplateImage) {
                 const imgWidth = diamondTemplateImage.width;
                 const imgHeight = diamondTemplateImage.height;
-                const diagramHeight = imgHeight / 2;
+                
+                // The SVG contains two views side-by-side, so we split the width by 2
+                const singleViewWidth = imgWidth / 2;
+                const singleViewHeight = imgHeight;
 
-                const scale = 1.8;
-                const destWidth = imgWidth * scale;
-                const destHeight = diagramHeight * scale;
+                const scale = 2;
+                const destWidth = singleViewWidth * scale;
+                const destHeight = singleViewHeight * scale;
 
-                // Draw Crown View (Top half of SVG)
+                // Draw Crown View (Left half of SVG) -> Centered at 200, 300
                 const crownX = 200;
-                const crownY = 300;
+                const crownY = 240;
                 ctx.drawImage(
                     diamondTemplateImage,
-                    0, 0, imgWidth, diagramHeight, // Source rect (top half)
-                    crownX - destWidth / 2, crownY - destHeight / 2, destWidth, destHeight // Dest rect
+                    0, 0, singleViewWidth, singleViewHeight, // Source rect (Left half)
+                    crownX - destWidth / 2 , crownY - destHeight / 2, destWidth, destHeight // Dest rect
                 );
                 ctx.fillStyle = "#333";
-                ctx.font = "16px Arial";
+                ctx.font = "20px Arial";
                 ctx.textAlign = "center";
-                ctx.fillText("Crown View", crownX, crownY + destHeight / 2 + 20);
+                ctx.fillText("Crown View", crownX - 16, crownY + destHeight / 2 + 20);
 
-                // Draw Pavilion View (Bottom half of SVG)
+                // Draw Pavilion View (Right half of SVG) -> Centered at 600, 300
                 const pavX = 600;
-                const pavY = 300;
+                const pavY = 240;
                 ctx.drawImage(
                     diamondTemplateImage,
-                    0, diagramHeight, imgWidth, diagramHeight, // Source rect (bottom half)
+                    singleViewWidth, 0, singleViewWidth, singleViewHeight, // Source rect (Right half)
                     pavX - destWidth / 2, pavY - destHeight / 2, destWidth, destHeight // Dest rect
                 );
-                ctx.fillText("Pavilion View", pavX, pavY + destHeight / 2 + 20);
+                ctx.fillText("Pavilion View", pavX + 16, pavY + destHeight / 2 + 20);
                 ctx.textAlign = "left"; // Reset for other text
             }
         }
 
         // --- 2. Inclusion Class & Drawing ---
         class Inclusion {
-            constructor(x, y, type) {
+            constructor(x, y, type, color = 'red') {
                 this.x = x;
                 this.y = y;
                 this.type = type;
                 this.rotation = 0; // Degrees
+                this.color = color;
                 this.scale = 1;
                 this.width = 40; // Base size
                 this.height = 40;
@@ -781,8 +1102,8 @@
                 ctx.scale(this.scale, this.scale);
 
                 // Draw Symbol based on type
-                ctx.strokeStyle = 'red';
-                ctx.fillStyle = 'red';
+                ctx.strokeStyle = this.color;
+                ctx.fillStyle = this.color;
                 ctx.lineWidth = 2 / this.scale;
 
                 switch (this.type) {
@@ -790,6 +1111,21 @@
                         ctx.beginPath();
                         ctx.arc(0, 0, 15, 0, Math.PI * 2);
                         ctx.stroke();
+                        break;
+                    case 'dark_crystal':
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 12, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.save();
+                        ctx.clip();
+                        ctx.beginPath();
+                        const hatchStep = 4 / this.scale;
+                        for (let i = -20; i < 20; i += hatchStep) {
+                            ctx.moveTo(i, -20);
+                            ctx.lineTo(i, 20);
+                        }
+                        ctx.stroke();
+                        ctx.restore();
                         break;
                     case 'feather':
                         ctx.beginPath();
@@ -810,11 +1146,16 @@
                         ctx.beginPath();
                         ctx.arc(0, 0, 15, 0, Math.PI * 2);
                         ctx.stroke();
-                        ctx.setLineDash([]);
+                        break;
+                    case 'linear_cloud':
+                        ctx.setLineDash([2, 2]);
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, 20, 1.5, 0, 0, Math.PI * 2);
+                        ctx.stroke();
                         break;
                     case 'pinpoint':
                         ctx.beginPath();
-                        ctx.arc(0, 0, 3, 0, Math.PI * 2);
+                        ctx.arc(0, 0, 1, 0, Math.PI * 2);
                         ctx.fill();
                         break;
                     case 'group_pinpoints':
@@ -823,6 +1164,12 @@
                         ctx.beginPath(); ctx.arc(6, -6, 2, 0, Math.PI * 2); ctx.fill();
                         ctx.beginPath(); ctx.arc(-6, 6, 2, 0, Math.PI * 2); ctx.fill();
                         ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
+                        break;
+                    case 'needle':
+                        ctx.beginPath();
+                        ctx.moveTo(-20, 0);
+                        ctx.lineTo(20, 0);
+                        ctx.stroke();
                         break;
                     case 'knot':
                         ctx.beginPath();
@@ -867,7 +1214,117 @@
                         ctx.moveTo(-20, 0);
                         ctx.quadraticCurveTo(0, 7, 20, 0);
                         ctx.stroke();
-                        ctx.setLineDash([]);
+                        break;
+                    case 'indented_natural':
+                        ctx.strokeStyle = 'red';
+                        ctx.beginPath();
+                        ctx.moveTo(-15, -5);
+                        ctx.lineTo(-15, 10);
+                        ctx.lineTo(15, -5);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.strokeStyle = 'green';
+                        ctx.moveTo(-14, -5);
+                        ctx.lineTo(-14, 8);
+                        ctx.lineTo(15, -6);
+                        ctx.stroke();
+                        break;
+                    case 'percussion_mark':
+                        ctx.beginPath();
+                        ctx.moveTo(-7, -7); ctx.lineTo(7, 7);
+                        ctx.moveTo(7, -7); ctx.lineTo(-7, 7);
+                        ctx.stroke();
+                        break;
+                    case 'etch_channel':
+                        ctx.strokeStyle = 'red';
+                        ctx.beginPath();
+                        ctx.rect(-5, -5, 10, 10);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.strokeStyle = 'green';
+                        ctx.arc(0, 0, 3, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+                    case 'twinning_wisp':
+                        ctx.beginPath();
+                        ctx.setLineDash([1,3]);
+                        ctx.moveTo(-20, 0);
+                        ctx.bezierCurveTo(-10, -10, 10, 10, 20, 0);
+                        ctx.stroke();
+                        break;
+                    case 'extra_facet':
+                        ctx.beginPath();
+                        ctx.moveTo(14, 8);
+                        ctx.lineTo(14, -11);
+                        ctx.lineTo(-15, 8);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.moveTo(4.64, 0);
+                        ctx.lineTo(-1.12, 0);
+                        ctx.lineTo(-1.12, 5.76);
+                        ctx.lineTo(4.64, 5.76);
+                        ctx.moveTo(-1.12, 2.88);
+                        ctx.lineTo(3.2, 2.88);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.moveTo(11.84, 0);
+                        ctx.lineTo(6.08, 0);
+                        ctx.lineTo(6.08, 5.76);
+                        ctx.moveTo(6.08, 2.88);
+                        ctx.lineTo(10.4, 2.88);
+                        ctx.stroke();
+                        break;
+                    case 'natural':
+                        ctx.beginPath();
+                        ctx.moveTo(14, 8);
+                        ctx.lineTo(14, -11);
+                        ctx.lineTo(-15, 8);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.moveTo(1.88, 5.76);
+                        ctx.lineTo(1.88, 0);
+                        ctx.lineTo(7.64, 5.76);
+                        ctx.lineTo(7.64, 0);
+                        ctx.stroke();
+                        break;
+                    case 'nick':
+                        ctx.beginPath();
+                        ctx.moveTo(-5, 5);
+                        ctx.lineTo(0, -5);
+                        ctx.lineTo(5, 5);
+                        ctx.stroke();
+                        break;
+                    case 'abrasion':
+                        ctx.lineWidth = 1.5 / this.scale;
+                        ctx.beginPath();
+                        ctx.moveTo(-10, -5); ctx.lineTo(0, -3);
+                        ctx.moveTo(-7, 0); ctx.lineTo(3, 2);
+                        ctx.moveTo(-10, 5); ctx.lineTo(0, 7);
+                        ctx.stroke();
+                        break;
+                    case 'scratch':
+                        ctx.beginPath();
+                        ctx.moveTo(-15, 0);
+                        ctx.quadraticCurveTo(-5, -10, 5, 0);
+                        ctx.quadraticCurveTo(15, 10, 20, 0);
+                        ctx.stroke();
+                        break;
+                    case 'burn_mark':
+                        ctx.setLineDash([1, 3]);
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 10, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+                    case 'polish_lines':
+                        ctx.lineWidth = 1 / this.scale;
+                        ctx.beginPath();
+                        ctx.moveTo(-15, -5); ctx.lineTo(15, -5);
+                        ctx.moveTo(-15, 0); ctx.lineTo(15, 0);
+                        ctx.moveTo(-15, 5); ctx.lineTo(15, 5);
+                        ctx.stroke();
                         break;
                 }
 
@@ -877,13 +1334,13 @@
                     ctx.lineWidth = 2 / this.scale;
                     ctx.setLineDash([5, 3]);
                     ctx.strokeRect(-this.width / 2 - 5, -this.height / 2 - 5, this.width + 10, this.height + 10);
-                    ctx.setLineDash([]);
                 }
 
                 ctx.restore();
 
                 // Draw Handles (World Space)
-                if (isSelected) {
+                // Hide handles on touch devices to avoid clutter; use pinch/rotate gestures instead
+                if (isSelected && !window.matchMedia("(pointer: coarse)").matches) {
                     this.drawHandles(ctx);
                 }
             }
@@ -946,6 +1403,11 @@
                 const coords = this.getHandleCoords();
                 const hitDist = 20; // Hit tolerance
 
+                // Prevent handle interactions on touch devices (unless using a mouse)
+                if (window.matchMedia("(pointer: coarse)").matches) {
+                    return Math.hypot(mx - this.x, my - this.y) < (this.width / 2) * this.scale + 10 ? 'move' : null;
+                }
+
                 // Check Rotation Handle
                 if (Math.hypot(mx - coords.rot.x, my - coords.rot.y) < hitDist) return 'rotate';
 
@@ -980,41 +1442,32 @@
 
         // --- 4. Event Listeners ---
 
-        // HTML5 Drag and Drop (From Palette to Canvas)
-        const draggables = document.querySelectorAll('.symbol-item');
-        draggables.forEach(elem => {
-            elem.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('type', elem.dataset.type);
-            });
-            // Click to add (Mobile friendly alternative to drag)
-            elem.addEventListener('click', (e) => {
-                addInclusion(canvas.width / 2, canvas.height / 2, elem.dataset.type);
-            });
-        });
-
-        canvas.addEventListener('dragover', (e) => {
-            e.preventDefault(); // Allow drop
-        });
-
-        canvas.addEventListener('drop', (e) => {
+        canvas.addEventListener('contextmenu', e => {
             e.preventDefault();
-            const type = e.dataTransfer.getData('type');
+            if (dragAction) return; // Don't show if dragging
 
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
+            const { x, y } = getPointerPos(e);
+            contextMenuPos = { x, y };
 
-            const x = (e.clientX - rect.left) * scaleX;
-            const y = (e.clientY - rect.top) * scaleY;
+            contextMenu.style.left = `${e.clientX}px`;
+            contextMenu.style.top = `${e.clientY}px`;
+            contextMenu.style.display = 'block';
 
-            addInclusion(x, y, type);
+            deselectAll();
+            render();
         });
 
-        function addInclusion(x, y, type) {
-            const newInclusion = new Inclusion(x, y, type);
+        window.addEventListener('click', (e) => {
+            if (!contextMenu.contains(e.target)) {
+                contextMenu.style.display = 'none';
+            }
+        });
+
+        function addInclusion(x, y, type, color) {
+            const newInclusion = new Inclusion(x, y, type, color);
             inclusions.push(newInclusion);
             selectInclusion(newInclusion);
-            updateInclusionsOutput();
+            updateAllOutputs();
             render();
         }
 
@@ -1039,6 +1492,7 @@
 
             // Handle Pinch Start
             if (e.touches && e.touches.length === 2) {
+                clearTimeout(longPressTimer);
                 dragAction = 'pinch';
                 potentialDeselect = false;
                 const p1 = getPointerPos({ touches: [e.touches[0]] });
@@ -1064,6 +1518,7 @@
             if (selectedInclusion) {
                 const action = selectedInclusion.getHitAction(mx, my);
                 if (action) {
+                    clearTimeout(longPressTimer);
                     dragAction = action;
                     dragStart.x = mx;
                     dragStart.y = my;
@@ -1084,6 +1539,7 @@
             // Check hits on other items
             for (let i = inclusions.length - 1; i >= 0; i--) {
                 if (inclusions[i].getHitAction(mx, my)) {
+                    clearTimeout(longPressTimer);
                     selectInclusion(inclusions[i]);
                     dragAction = 'move';
                     dragStart.offsetX = mx - inclusions[i].x;
@@ -1098,13 +1554,33 @@
             if (e.type === 'mousedown') {
                 deselectAll();
                 render();
-            } else {
+            } else { // touchstart
                 potentialDeselect = true;
+                const touch = e.touches[0];
+                touchStartPos = { x: touch.clientX, y: touch.clientY };
+
+                longPressTimer = setTimeout(() => {
+                    // Long press successful
+                    contextMenuPos = { x: mx, y: my };
+                    contextMenu.style.left = `${touchStartPos.x}px`;
+                    contextMenu.style.top = `${touchStartPos.y}px`;
+                    contextMenu.style.display = 'block';
+                    potentialDeselect = false; // It was a long press, not a tap-to-deselect
+                }, LONG_PRESS_DURATION);
             }
         }
 
         function handlePointerMove(e) {
-            if (e.type === 'touchmove') e.preventDefault();
+            if (e.type === 'touchmove') {
+                e.preventDefault();
+                if (touchStartPos.x || touchStartPos.y) {
+                    const touch = e.touches[0];
+                    const dist = Math.hypot(touch.clientX - touchStartPos.x, touch.clientY - touchStartPos.y);
+                    if (dist > 10) { // If finger moves too much, cancel long press
+                        clearTimeout(longPressTimer);
+                    }
+                }
+            }
             if (!dragAction || !selectedInclusion) return;
 
             // Handle Pinch Move
@@ -1127,7 +1603,7 @@
                 selectedInclusion.x = dragStart.incX + (currentCenterX - dragStart.centerX);
                 selectedInclusion.y = dragStart.incY + (currentCenterY - dragStart.centerY);
 
-                updateInclusionsOutput();
+                updateAllOutputs();
                 render();
                 return;
             }
@@ -1148,17 +1624,21 @@
                 selectedInclusion.scale = Math.max(0.1, dragStart.val * scaleFactor);
             }
 
-            updateInclusionsOutput();
+            updateAllOutputs();
             render();
         }
 
         function handlePointerUp(e) {
+            clearTimeout(longPressTimer);
+            touchStartPos = { x: 0, y: 0 }; // Reset
+
             if (potentialDeselect) {
                 deselectAll();
                 render();
                 potentialDeselect = false;
             }
             dragAction = null;
+            
         }
 
         // Mouse Events
@@ -1192,7 +1672,7 @@
             if (selectedInclusion) {
                 inclusions = inclusions.filter(i => i !== selectedInclusion);
                 deselectAll();
-                updateInclusionsOutput();
+                updateAllOutputs();
                 render();
             }
         }
@@ -1205,24 +1685,126 @@
             if (confirm("Clear all inclusions?")) {
                 inclusions = [];
                 deselectAll();
-                updateInclusionsOutput();
+                updateAllOutputs();
                 render();
             }
         });
 
         saveBtn.addEventListener('click', () => {
+            // Temporarily deselect to capture clean image
+            const previousSelection = selectedInclusion;
+            selectedInclusion = null;
+            render();
+
             // Create a temporary link to download the canvas as image
             const link = document.createElement('a');
             link.download = 'diamond-grading-report.png';
             link.href = canvas.toDataURL();
             link.click();
+
+            // Restore selection
+            selectedInclusion = previousSelection;
+            render();
         });
 
         // Initial Draw
+        populateContextMenu();
         loadAndDrawTemplate();
+
+        // --- Submission Logic ---
+        document.getElementById('submit-grading-btn').addEventListener('click', () => {
+            const btn = document.getElementById('submit-grading-btn');
+            const originalText = btn.textContent;
+            btn.textContent = "Uploading Image...";
+            btn.disabled = true;
+
+            // Temporarily deselect to capture clean image
+            const previousSelection = selectedInclusion;
+            selectedInclusion = null;
+            render();
+
+            // 1. Upload Image to ImgBB
+            const base64 = canvas.toDataURL("image/png").split(",")[1];
+
+            // Restore selection
+            selectedInclusion = previousSelection;
+            render();
+
+            fetch("https://api.imgbb.com/1/upload?key=6124f899a73f588244decc1789f2ba68", {
+                method: "POST",
+                body: new URLSearchParams({
+                    image: base64
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    const imageUrl = result.data.url;
+                    btn.textContent = "Submitting Data...";
+
+                    // 2. Gather all data
+                    const formData = {
+                        studentName: document.getElementById('studentName').value,
+                        stoneNumber: document.getElementById('stoneNumber').value,
+                        shape: document.getElementById('shapeCut').value,
+                        carat: document.getElementById('caratWeight').value,
+                        clarity: document.getElementById('clarity').value,
+                        color: document.getElementById('colorSelect').value,
+                        fluorescence: document.getElementById('fluorescence').value,
+                        
+                        // Measurements
+                        measMax: document.getElementById('measMax').value,
+                        measMin: document.getElementById('measMin').value,
+                        measAvg: document.getElementById('measAvg').value,
+                        measHeight: document.getElementById('measHeight').value,
+
+                        // Proportions
+                        propDepth: document.getElementById('propDepth').value,
+                        gradeDepth: document.getElementById('gradeDepth').value,
+                        propTable: document.getElementById('propTable').value,
+                        gradeTable: document.getElementById('gradeTable').value,
+                        propPavilion: document.getElementById('propPavilion').value,
+                        gradePavilion: document.getElementById('gradePavilion').value,
+                        propGirdle: document.getElementById('propGirdle').value,
+                        gradeGirdle: document.getElementById('gradeGirdle').value,
+                        propCrownH: document.getElementById('propCrownH').value,
+                        gradeCrownH: document.getElementById('gradeCrownH').value,
+                        propCrownA: document.getElementById('propCrownA').value,
+                        gradeCrownA: document.getElementById('gradeCrownA').value,
+
+                        // Grades
+                        gradeFinalProp: document.getElementById('gradeFinalProp').value,
+                        gradePolish: document.getElementById('gradePolish').value,
+                        gradeSym: document.getElementById('gradeSym').value,
+
+                        // Inclusions List
+                        inclusions: document.getElementById('inclusionsOutput').textContent,
+                        imageUrl: imageUrl
+                    };
+
+                    return fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(formData)
+                    });
+                } else {
+                    throw new Error('Image upload failed: ' + (result.error ? result.error.message : 'Unknown error'));
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message); // Show success message and accuracy
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Submission failed: ' + error.message);
+            })
+            .finally(() => {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            });
+        });
 
     </script>
 
 </body>
-
 </html>
