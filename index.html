@@ -313,7 +313,7 @@
             border-radius: 4px;
             display: none; /* Hidden by default */
             font-size: 0.9rem;
-            min-width: 180px;
+            min-width: 110px;
         }
         .context-menu ul {
             list-style: none;
@@ -345,9 +345,6 @@
             border: 1px solid #ccc;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
             border-radius: 4px;
-        }
-        .context-menu li:hover > .submenu {
-            display: block;
         }
 
         /* Canvas Controls */
@@ -386,6 +383,77 @@
         #delete-btn:hover svg { fill: #e74c3c; }
         #delete-btn:disabled { opacity: 0.5; cursor: default; }
         #delete-btn:disabled:hover svg { fill: #7f8c8d; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            display: none; /* Initially hidden */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #333;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+        #resultsBreakdown table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        #resultsBreakdown th, #resultsBreakdown td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        #resultsBreakdown th {
+            background-color: #f8f8f8;
+            font-weight: 600;
+        }
+        .accuracy-cell {
+            font-weight: bold;
+            text-align: center !important;
+        }
+        #overallAccuracy {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: right;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
     </style>
 </head>
 <body>
@@ -585,6 +653,22 @@
                             </select>
                         </div>
 
+                        <div class="form-group">
+                            <label>Culet Condition</label>
+                            <select id="culetCondition">
+                                <option value="">Select...</option>
+                                <option value="Pointed">Pointed</option>
+                                <option value="None">None</option>
+                                <option value="Abraided">Abraided</option>
+                                <option value="Chipped">Chipped</option>
+                                <option value="Damaged">Damaged</option>
+                                <option value="Faceted (Very Small)">Faceted (Very Small)</option>
+                                <option value="Faceted (Small)">Faceted (Small)</option>
+                                <option value="Faceted (Medium)">Faceted (Medium)</option>
+                                <option value="Faceted (Large)">Faceted (Large)</option>
+                            </select>
+                        </div>
+
                         <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
 
                         <div class="section-title">Polish (Blemishes)</div>
@@ -673,6 +757,20 @@
         </ul>
     </div>
 
+    <!-- Results Modal -->
+    <div id="resultsModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Grading Result Breakdown</h2>
+            <div id="resultsBreakdown">
+                <!-- Results table will be populated here -->
+            </div>
+            <div id="overallAccuracy">
+                <!-- Overall accuracy will be populated here -->
+            </div>
+        </div>
+    </div>
+
     <script>
         /**
          * Diamond Grading Application Logic
@@ -686,7 +784,7 @@
         const saveBtn = document.getElementById('save-btn');
 
         // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwJ7C-rzlP5O-7PrbhmwHfkfqtjXIo97kFBS6jZk0D1y0I-a5xmgrPb2LbJIx8DmqZ/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwyGVT7YnBkXxt3vFA3DGx03Cjg76orjtdAAE5RCmSn33a0UwALtUnaTbLYE0Mr_Rl/exec";
 
         // State
         let inclusions = []; // Array to store inclusion objects
@@ -805,6 +903,83 @@
                     addInclusion(contextMenuPos.x, contextMenuPos.y, type, color);
                     contextMenu.style.display = 'none';
                 }
+            });
+
+            contextMenu.addEventListener('mouseover', (e) => {
+                const hoveredLi = e.target.closest('li');
+                if (!hoveredLi) return;
+
+                // --- Z-Index Management to prevent sibling overlap ---
+                // When a submenu opens, it might overlap its "uncle" elements.
+                // We elevate the z-index of the direct parent LI to ensure its
+                // submenu appears on top of any siblings.
+                const parentUlForZIndex = hoveredLi.parentElement;
+                Array.from(parentUlForZIndex.children).forEach(siblingLi => {
+                    if (siblingLi.tagName === 'LI') siblingLi.style.zIndex = 'auto';
+                });
+                hoveredLi.style.zIndex = 1;
+
+                const parentUl = hoveredLi.parentElement;
+                // Find all submenus that are direct children of the LIs in the current UL
+                const submenusInLevel = Array.from(parentUl.children)
+                    .map(li => li.querySelector(':scope > .submenu'))
+                    .filter(Boolean);
+
+                // Find the submenu of the item we're currently hovering over
+                const currentSubmenu = hoveredLi.querySelector(':scope > .submenu');
+
+                // Hide all submenus in the current level except for the current one
+                submenusInLevel.forEach(sm => {
+                    if (sm !== currentSubmenu) {
+                        sm.style.display = 'none';
+                    }
+                });
+
+                // If we are hovering an item with a submenu, show and position it
+                if (currentSubmenu) {
+                    currentSubmenu.style.display = 'block';
+
+                    // Reset to default right-side position to measure.
+                    currentSubmenu.style.right = 'auto';
+                    currentSubmenu.style.left = '100%';
+                    currentSubmenu.style.top = '-5px';
+
+                    const rect = currentSubmenu.getBoundingClientRect();
+                    const windowWidth = window.innerWidth;
+
+                    // --- Horizontal Positioning ---
+                    const parentSubmenu = hoveredLi.closest('.submenu');
+                    // A submenu is "flipped" if it's positioned from the right edge of its parent.
+                    const isParentFlipped = parentSubmenu && parentSubmenu.style.right === '100%';
+
+                    // Flip the submenu left if its parent is already flipped, or if it overflows the window.
+                    if (isParentFlipped || rect.right > windowWidth) {
+                        const parentRect = hoveredLi.getBoundingClientRect();
+                        const submenuWidth = rect.width;
+                        // Only flip if there's enough space on the left.
+                        if (parentRect.left - submenuWidth > 0) {
+                            currentSubmenu.style.left = 'auto';
+                            currentSubmenu.style.right = '100%';
+                        }
+                    }
+
+                    // --- Vertical Positioning ---
+                    const windowHeight = window.innerHeight;
+                    const finalRect = currentSubmenu.getBoundingClientRect();
+                    if (finalRect.bottom > windowHeight) {
+                        const overflow = finalRect.bottom - windowHeight + 5; // 5px for margin
+                        const currentRelativeTop = finalRect.top - hoveredLi.getBoundingClientRect().top;
+                        currentSubmenu.style.top = `${currentRelativeTop - overflow}px`;
+                    }
+                }
+            });
+
+            contextMenu.addEventListener('mouseleave', () => {
+                // When the mouse leaves the entire menu, hide all submenus.
+                const allSubmenus = contextMenu.querySelectorAll('.submenu');
+                allSubmenus.forEach(sm => {
+                    sm.style.display = 'none';
+                });
             });
         }
 
@@ -1429,11 +1604,42 @@
             }
         }
 
+        // --- Ghost Crosshair ---
+        function drawGhostCrosshair(inclusion) {
+            // The canvas is 800px wide. The views are centered at x=200 and x=600.
+            // The reflection point is the center of the canvas, x=400.
+            // A point at x on one side is (400 - x) away from the center line.
+            // The ghost will be at 400 + (400 - x) = 800 - x.
+            const ghostX = 800 - inclusion.x;
+            const ghostY = inclusion.y;
+            const size = 10; // size of the crosshair arms
+
+            ctx.save();
+            ctx.strokeStyle = 'rgba(150, 150, 150, 0.8)';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 3]);
+
+            // Draw crosshair
+            ctx.beginPath();
+            ctx.moveTo(ghostX - size, ghostY);
+            ctx.lineTo(ghostX + size, ghostY);
+            ctx.moveTo(ghostX, ghostY - size);
+            ctx.lineTo(ghostX, ghostY + size);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
         // --- 3. Main Render Loop ---
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             drawDiamondTemplate();
+
+            // Draw ghost crosshair for selected or dragged inclusion
+            if (selectedInclusion) {
+                drawGhostCrosshair(selectedInclusion);
+            }
 
             inclusions.forEach(inc => {
                 inc.draw(ctx, inc === selectedInclusion);
@@ -1442,6 +1648,29 @@
 
         // --- 4. Event Listeners ---
 
+        function showContextMenu(x, y) {
+            contextMenu.style.left = `${x}px`;
+            contextMenu.style.top = `${y}px`;
+            contextMenu.style.display = 'block';
+
+            const menuRect = contextMenu.getBoundingClientRect();
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+
+            let newX = x;
+            let newY = y;
+
+            if (menuRect.right > windowWidth) {
+                newX = windowWidth - menuRect.width - 5; // 5px margin from edge
+            }
+            if (menuRect.bottom > windowHeight) {
+                newY = windowHeight - menuRect.height - 5; // 5px margin from edge
+            }
+
+            contextMenu.style.left = `${newX}px`;
+            contextMenu.style.top = `${newY}px`;
+        }
+
         canvas.addEventListener('contextmenu', e => {
             e.preventDefault();
             if (dragAction) return; // Don't show if dragging
@@ -1449,10 +1678,7 @@
             const { x, y } = getPointerPos(e);
             contextMenuPos = { x, y };
 
-            contextMenu.style.left = `${e.clientX}px`;
-            contextMenu.style.top = `${e.clientY}px`;
-            contextMenu.style.display = 'block';
-
+            showContextMenu(e.clientX, e.clientY);
             deselectAll();
             render();
         });
@@ -1562,9 +1788,7 @@
                 longPressTimer = setTimeout(() => {
                     // Long press successful
                     contextMenuPos = { x: mx, y: my };
-                    contextMenu.style.left = `${touchStartPos.x}px`;
-                    contextMenu.style.top = `${touchStartPos.y}px`;
-                    contextMenu.style.display = 'block';
+                    showContextMenu(touchStartPos.x, touchStartPos.y);
                     potentialDeselect = false; // It was a long press, not a tap-to-deselect
                 }, LONG_PRESS_DURATION);
             }
@@ -1711,6 +1935,72 @@
         populateContextMenu();
         loadAndDrawTemplate();
 
+        // --- Modal Logic ---
+        function displayResults(data) {
+            const modal = document.getElementById('resultsModal');
+            const breakdownContainer = document.getElementById('resultsBreakdown');
+            const overallAccuracyContainer = document.getElementById('overallAccuracy');
+            
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Your Input</th>
+                            <th>Correct Value</th>
+                            <th style="text-align: center;">Accuracy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.breakdown.forEach(item => {
+                const accuracy = parseFloat(item.accuracy);
+                const hue = accuracy * 1.2; // Maps 0-100 to 0-120 (red to green)
+                const color = `hsl(${hue}, 80%, 45%)`;
+
+                const userGradeText = item.userGrade ? ` (${item.userGrade})` : '';
+                const correctGradeText = item.correctGrade ? ` (${item.correctGrade})` : '';
+
+                tableHTML += `
+                    <tr>
+                        <td>${item.field}</td>
+                        <td>${item.userValue}${userGradeText}</td>
+                        <td>${item.correctValue}${correctGradeText}</td>
+                        <td class="accuracy-cell" style="color: ${color};">${accuracy.toFixed(0)}%</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `</tbody></table>`;
+            breakdownContainer.innerHTML = tableHTML;
+
+            if (data.overallAccuracy !== undefined) {
+                const overallAccuracy = parseFloat(data.overallAccuracy);
+                const overallHue = overallAccuracy * 1.2;
+                const overallColor = `hsl(${overallHue}, 80%, 45%)`;
+                overallAccuracyContainer.innerHTML = `Overall Accuracy: <span style="color: ${overallColor};">${overallAccuracy.toFixed(1)}%</span>`;
+            } else {
+                overallAccuracyContainer.innerHTML = '';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        const resultsModal = document.getElementById('resultsModal');
+        if (resultsModal) {
+            const closeBtn = resultsModal.querySelector('.modal-close');
+            closeBtn.addEventListener('click', () => {
+                resultsModal.style.display = 'none';
+            });
+            resultsModal.addEventListener('click', (e) => {
+                if (e.target === resultsModal) {
+                    resultsModal.style.display = 'none';
+                }
+            });
+        }
+
+
         // --- Submission Logic ---
         document.getElementById('submit-grading-btn').addEventListener('click', () => {
             const btn = document.getElementById('submit-grading-btn');
@@ -1774,6 +2064,7 @@
 
                         // Grades
                         gradeFinalProp: document.getElementById('gradeFinalProp').value,
+                        culetCondition: document.getElementById('culetCondition').value,
                         gradePolish: document.getElementById('gradePolish').value,
                         gradeSym: document.getElementById('gradeSym').value,
 
@@ -1792,7 +2083,13 @@
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message); // Show success message and accuracy
+                console.log("Server Response:", data); // Log the actual data received from the server
+                if (data.success && data.breakdown) {
+                    displayResults(data);
+                } else {
+                    // Fallback to alert if no breakdown is provided
+                    alert(data.message || 'Submission successful, but no breakdown available. Check the browser console for the server response.');
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
