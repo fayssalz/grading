@@ -1,10 +1,10 @@
 {
-    "livePreview.hostIP": "192.168.8.128",
+    "livePreview.hostIP": "192.168.22.211",
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "livePreview.httpHeaders": {
         "Accept-Ranges": "bytes"
     },
-    "vscode-edge-devtools.hostname": "192.168.8.128",
+    "vscode-edge-devtools.hostname": "192.168.22.211",
     "vscode-edge-devtools.browserFlavor": "Default",
     "Codegeex.Chat.LanguagePreference": "English",
     "Codegeex.Comment.LanguagePreference": "English",

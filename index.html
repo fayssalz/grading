@@ -386,6 +386,19 @@
         #delete-btn:hover svg { fill: #e74c3c; }
         #delete-btn:disabled { opacity: 0.5; cursor: default; }
         #delete-btn:disabled:hover svg { fill: #7f8c8d; }
+
+        /* Modal Styles */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fff; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 95%; max-width: 900px; border-radius: 8px; position: relative; }
+        .close-modal { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close-modal:hover { color: black; }
+        .results-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+        .results-table th, .results-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .results-table th { background-color: var(--primary-color); color: white; }
+        .results-table tr:nth-child(even) { background-color: #f2f2f2; }
+        .accuracy-high { color: green; font-weight: bold; }
+        .accuracy-med { color: orange; font-weight: bold; }
+        .accuracy-low { color: red; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -489,18 +502,18 @@
                         
                         <div class="section-title">Measurements (mm)</div>
                         <div class="form-row">
-                            <div class="form-group"><label>Max Diam</label><input type="number" step="0.01" id="measMax"></div>
-                            <div class="form-group"><label>Min Diam</label><input type="number" step="0.01" id="measMin"></div>
+                            <div class="form-group"><label>Max Diam</label><input type="number" step="0.01" id="measMax" oninput="updateMeasurements()"></div>
+                            <div class="form-group"><label>Min Diam</label><input type="number" step="0.01" id="measMin" oninput="updateMeasurements()"></div>
                         </div>
                         <div class="form-row">
-                            <div class="form-group"><label>Avg Diam</label><input type="number" step="0.01" id="measAvg"></div>
-                            <div class="form-group"><label>Height</label><input type="number" step="0.01" id="measHeight"></div>
+                            <div class="form-group"><label>Avg Diam</label><input type="number" step="0.01" id="measAvg" readonly style="background-color: #eee;"></div>
+                            <div class="form-group"><label>Height</label><input type="number" step="0.01" id="measHeight" oninput="updateMeasurements()"></div>
                         </div>
 
                         <div class="section-title">Proportions</div>
                         
                         <div class="form-row">
-                            <div class="form-group" style="flex: 2;"><label>Total Depth %</label><input type="number" step="0.1" id="propDepth"></div>
+                            <div class="form-group" style="flex: 2;"><label>Total Depth %</label><input type="number" step="0.1" id="propDepth" oninput="updateProportions('depth')"></div>
                             <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeDepth">
                                 <option value="">Select...</option>
                                 <option>Ideal</option>
@@ -524,7 +537,7 @@
                             </select></div>
                         </div>
                         <div class="form-row">
-                            <div class="form-group" style="flex: 2;"><label>Pavilion Depth %</label><input type="number" step="0.1" id="propPavilion"></div>
+                            <div class="form-group" style="flex: 2;"><label>Pavilion Depth %</label><input type="number" step="0.1" id="propPavilion" oninput="updateProportions('pavilion')"></div>
                             <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradePavilion">
                                 <option value="">Select...</option>
                                 <option>Ideal</option>
@@ -536,7 +549,7 @@
                             </select></div>
                         </div>
                         <div class="form-row">
-                            <div class="form-group" style="flex: 2;"><label>Girdle Thick %</label><input type="number" step="0.1" id="propGirdle"></div>
+                            <div class="form-group" style="flex: 2;"><label>Girdle Thick %</label><input type="number" step="0.1" id="propGirdle" oninput="updateProportions('girdle')"></div>
                             <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeGirdle">
                                 <option value="">Select...</option>
                                 <option>Ideal</option>
@@ -548,7 +561,7 @@
                             </select></div>
                         </div>
                         <div class="form-row">
-                            <div class="form-group" style="flex: 2;"><label>Crown Height %</label><input type="number" step="0.1" id="propCrownH"></div>
+                            <div class="form-group" style="flex: 2;"><label>Crown Height %</label><input type="number" step="0.1" id="propCrownH" oninput="updateProportions('crown')"></div>
                             <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeCrownH">
                                 <option value="">Select...</option>
                                 <option>Ideal</option>
@@ -560,7 +573,7 @@
                             </select></div>
                         </div>
                         <div class="form-row">
-                            <div class="form-group" style="flex: 2;"><label>Crown Angle (°)</label><input type="number" step="0.1" id="propCrownA"></div>
+                            <div class="form-group" style="flex: 2;"><label>Crown Angle (°)</label><input type="number" step="0.1" id="propCrownA" readonly style="background-color: #eee;"></div>
                             <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeCrownA">
                                 <option value="">Select...</option>
                                 <option>Ideal</option>
@@ -689,6 +702,18 @@
         </ul>
     </div>
 
+    <!-- Results Modal -->
+    <div id="resultsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="resultsTitle">Grading Results</h2>
+            <div id="resultsBody"></div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn" onclick="document.getElementById('resultsModal').style.display='none'">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         /**
          * Diamond Grading Application Logic
@@ -702,7 +727,7 @@
         const saveBtn = document.getElementById('save-btn');
 
         // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwJ7C-rzlP5O-7PrbhmwHfkfqtjXIo97kFBS6jZk0D1y0I-a5xmgrPb2LbJIx8DmqZ/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCGT0M5EP75KFiaQC5Y_4wCkT7iw1db9KGcpoXP-yEzv8HaEIWhhxTlIov3ZAUpeJf/exec";
 
         // State
         let inclusions = []; // Array to store inclusion objects
@@ -834,6 +859,64 @@
             opt.textContent = letter;
             colorSelect.appendChild(opt);
         }
+
+        function updateMeasurements() {
+            const max = parseFloat(document.getElementById('measMax').value);
+            const min = parseFloat(document.getElementById('measMin').value);
+            const height = parseFloat(document.getElementById('measHeight').value);
+            const avgInput = document.getElementById('measAvg');
+            const depthInput = document.getElementById('propDepth');
+            const tableInput = document.getElementById('propTable');
+            const crownHInput = document.getElementById('propCrownH');
+            const crownAInput = document.getElementById('propCrownA');
+
+            if (!isNaN(max) && !isNaN(min)) {
+                const avg = (max + min) / 2;
+                avgInput.value = avg.toFixed(2);
+                
+                if (!isNaN(height) && avg > 0) {
+                    depthInput.value = ((height / avg) * 100).toFixed(1);
+                }
+
+                // Auto-calculate Crown Angle: tan(angle) = CrownHeight% / ((100% - Table%) / 2)
+                const ch = parseFloat(crownHInput.value);
+                const table = parseFloat(tableInput.value);
+                if (!isNaN(ch) && !isNaN(table) && table < 100) {
+                    const angleRad = Math.atan(ch / ((100 - table) / 2));
+                    crownAInput.value = (angleRad * (180 / Math.PI)).toFixed(1);
+                }
+            } else {
+                avgInput.value = '';
+            }
+        }
+
+        function updateProportions(changedField) {
+            const depth = parseFloat(document.getElementById('propDepth').value) || 0;
+            const pav = parseFloat(document.getElementById('propPavilion').value) || 0;
+            const girdle = parseFloat(document.getElementById('propGirdle').value) || 0;
+            const crown = parseFloat(document.getElementById('propCrownH').value) || 0;
+
+            if (changedField === 'depth') {
+                // If total depth changes, adjust pavilion to match (Depth = Pav + Girdle + Crown)
+                document.getElementById('propPavilion').value = (depth - girdle - crown).toFixed(1);
+            } else if (changedField === 'pavilion') {
+                // If pavilion changes, adjust total depth
+                document.getElementById('propDepth').value = (pav + girdle + crown).toFixed(1);
+            } else if (changedField === 'girdle') {
+                // If girdle changes, adjust crown to keep depth/pavilion stable
+                document.getElementById('propCrownH').value = (depth - pav - girdle).toFixed(1);
+            } else if (changedField === 'crown') {
+                // If crown changes, adjust girdle to keep depth/pavilion stable
+                document.getElementById('propGirdle').value = (depth - pav - crown).toFixed(1);
+            }
+            
+            // Trigger crown angle calculation
+            updateMeasurements();
+        }
+
+        // Add listeners to trigger crown angle calculation when inputs change
+        document.getElementById('propTable').addEventListener('input', updateMeasurements);
+        document.getElementById('propCrownH').addEventListener('input', updateMeasurements);
 
         // Clarity Calculation Logic
         const claritySelect = document.getElementById('clarity');
@@ -1848,7 +1931,50 @@
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message); // Show success message and accuracy
+                if (data.breakdown && data.breakdown.length > 0) {
+                    // Populate and show modal
+                    const modal = document.getElementById('resultsModal');
+                    const body = document.getElementById('resultsBody');
+                    
+                    let html = `<div style="margin-bottom: 15px; font-size: 1.1em; font-weight:bold;">${data.message}</div>`;
+                    
+                    html += `<table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Your Value</th>
+                                <th>Correct Value</th>
+                                <th>Your Grade</th>
+                                <th>Correct Grade</th>
+                                <th>Accuracy</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                    
+                    data.breakdown.forEach(item => {
+                        let accClass = 'accuracy-low';
+                        const acc = parseFloat(item.accuracy);
+                        if (acc >= 90) accClass = 'accuracy-high';
+                        else if (acc >= 70) accClass = 'accuracy-med';
+                        
+                        html += `<tr>
+                            <td>${item.field}</td>
+                            <td>${item.userValue}</td>
+                            <td>${item.correctValue}</td>
+                            <td>${item.userGrade || ''}</td>
+                            <td>${item.correctGrade || ''}</td>
+                            <td class="${accClass}">${item.accuracy}%</td>
+                        </tr>`;
+                    });
+                    
+                    html += `</tbody></table>`;
+                    body.innerHTML = html;
+                    modal.style.display = 'block';
+                    document.querySelector('.close-modal').onclick = () => modal.style.display = 'none';
+                    window.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; };
+                } else {
+                    alert(data.message); // Fallback if no detailed breakdown is available
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
