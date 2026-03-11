@@ -6,7 +6,15 @@ function doPost(e) {
     // --- 1. Log Student Entry ---
     const entrySheet = ss.getSheetByName("answers");
     const timestamp = new Date();
+    const data = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
     
+    // --- 1. Log Student Entry ---
+    const entrySheet = ss.getSheetByName("answers");
+    const timestamp = new Date();
+    
+    // Construct the row with all fields including new proportion grades
+    const entryRow = [
     // Construct the row with all fields including new proportion grades
     const entryRow = [
       new Date(),                 // Column A: Timestamp
@@ -18,11 +26,13 @@ function doPost(e) {
       data.color,                 // Column G
       data.fluorescence,          // Column H
 
+
       // Measurements
       data.measMax,               // Column I
       data.measMin,               // Column J
       data.measAvg,               // Column K
       data.measHeight,            // Column L
+
 
       // Proportions
       data.propDepth,             // Column M
@@ -38,11 +48,15 @@ function doPost(e) {
       data.propCrownA,            // Column W
       data.gradeCrownA,           // Column X
 
+
       // Grades
       data.gradeFinalProp,        // Column Y
       data.culetCondition,        // Column Z (New Field: Culet Condition)
       data.gradePolish,           // Column AA
+      data.culetCondition,        // Column Z (New Field: Culet Condition)
+      data.gradePolish,           // Column AA
       data.gradeSym,              // Column AB
+
 
       // Inclusions & Image
       data.inclusions,            // Column AC
@@ -267,5 +281,8 @@ function doPost(e) {
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({status: "error", message: error.toString()}))
       .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({status: "error", message: error.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
   }
 }
+
