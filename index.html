@@ -1,1215 +1,1522 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Diamond Grading Sheet</title>
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #3498db;
-            --bg-color: #f4f7f6;
-            --panel-bg: #ffffff;
-        }
+      :root {
+        --primary-color: #2c3e50;
+        --accent-color: #3498db;
+        --bg-color: #f4f7f6;
+        --panel-bg: #ffffff;
+      }
 
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg-color);
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      header {
+        background-color: var(--primary-color);
+        color: white;
+        text-align: center;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .main-container {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      /* Sidebar / Palette */
+      .sidebar {
+        width: 30%;
+        min-width: 200px;
+        background-color: var(--panel-bg);
+        border-right: 1px solid #ddd;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+        overflow-y: auto;
+      }
+
+      .tool-section h3 {
+        margin-top: 0;
+        font-size: 1rem;
+        color: var(--primary-color);
+        border-bottom: 2px solid var(--accent-color);
+        padding-bottom: 5px;
+      }
+
+      .symbol-palette {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .symbol-item {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 10px;
+        text-align: center;
+        cursor: grab;
+        background: #fafafa;
+        transition: all 0.2s;
+      }
+
+      .symbol-item:hover {
+        background: #eef;
+        border-color: var(--accent-color);
+      }
+
+      .symbol-icon {
+        width: 30px;
+        height: 30px;
+        margin: 0 auto 5px;
+        display: block;
+      }
+
+      /* Canvas Area */
+      .canvas-area {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: start;
+        background-color: #e0e0e0;
+        position: relative;
+      }
+
+      canvas {
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        cursor: crosshair;
+      }
+
+      /* Controls Panel */
+      .controls {
+        padding: 15px;
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+
+      .control-group {
+        margin-bottom: 10px;
+      }
+
+      label {
+        display: block;
+        font-size: 0.8rem;
+        margin-bottom: 5px;
+      }
+
+      input[type="range"] {
+        width: 100%;
+      }
+
+      .btn {
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 5px;
+      }
+
+      .btn-danger {
+        background-color: #e74c3c;
+      }
+
+      .btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      @media (max-width: 768px) {
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+          height: auto;
+          min-height: 100vh;
         }
-
-        header {
-            background-color: var(--primary-color);
-            color: white;
-            
-            text-align: center;
-        }
-
         .main-container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
+          flex-direction: column;
+          overflow: visible;
         }
-
-        /* Sidebar / Palette */
         .sidebar {
-            width: 30%;
-            min-width: 200px;
-            background-color: var(--panel-bg);
-            border-right: 1px solid #ddd;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-            overflow-y: auto;
+          width: 100%;
+          order: 2;
+          box-sizing: border-box;
         }
-
-        .tool-section h3 {
-            margin-top: 0;
-            font-size: 1rem;
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--accent-color);
-            padding-bottom: 5px;
-        }
-
-        .symbol-palette {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .symbol-item {
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 10px;
-            text-align: center;
-            cursor: grab;
-            background: #fafafa;
-            transition: all 0.2s;
-        }
-
-        .symbol-item:hover {
-            background: #eef;
-            border-color: var(--accent-color);
-        }
-
-        .symbol-icon {
-            width: 30px;
-            height: 30px;
-            margin: 0 auto 5px;
-            display: block;
-        }
-
-        /* Canvas Area */
         .canvas-area {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: start;
-            background-color: #e0e0e0;
-            position: relative;
+          order: 1;
+          padding: 10px;
+          flex: none;
         }
-
         canvas {
-            background-color: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            cursor: crosshair;
+          width: 100%;
+          height: auto;
         }
+      }
 
-        /* Controls Panel */
-        .controls {
-            padding: 15px;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
+      /* Accordion Styles */
+      .accordion-item {
+        border-bottom: 1px solid #ddd;
+      }
+      .accordion-item:last-child {
+        border-bottom: none;
+      }
+      .accordion-header {
+        width: 100%;
+        background: #fff;
+        border: none;
+        outline: none;
+        padding: 15px;
+        text-align: left;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #333;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background-color 0.2s;
+      }
+      .accordion-header:hover {
+        background-color: #f9f9f9;
+      }
+      .accordion-header.active {
+        background-color: #eef2ff;
+        color: var(--accent-color);
+      }
+      .accordion-header .icon {
+        transition: transform 0.3s ease;
+        font-size: 0.8rem;
+      }
+      .accordion-header.active .icon {
+        transform: rotate(180deg);
+      }
+      .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        background-color: #fff;
+      }
+      .accordion-body {
+        padding: 5px;
+        display: flex;
+        flex-direction: column;
+      }
+      .section-title {
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: var(--primary-color);
+        margin: 10px 0 5px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 3px;
+      }
+      .form-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .form-row > div {
+        flex: 1;
+      }
+      .output-list {
+        border: 1px solid #ccc;
+        background: #fafafa;
+        padding: 5px;
+        border-radius: 4px;
+        min-height: 40px;
+        font-size: 0.85rem;
+      }
+      .tag {
+        display: inline-block;
+        background: #e1ecf4;
+        color: #2c3e50;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin: 2px;
+        font-size: 0.8rem;
+        border: 1px solid #ccf;
+        cursor: pointer;
+      }
+      .tag:hover {
+        background-color: #d0e1ed;
+      }
+      .tag::after {
+        content: " ×";
+        font-weight: bold;
+        color: #7f8c8d;
+      }
+      .predefined-tag {
+        display: inline-block;
+        background: #f0f0f0;
+        color: #333;
+        padding: 4px 8px;
+        border-radius: 4px;
+        margin: 2px;
+        font-size: 0.8rem;
+        border: 1px solid #ccc;
+        cursor: pointer;
+      }
+      .predefined-tag:hover {
+        background-color: #dcdcdc;
+      }
 
-        .control-group {
-            margin-bottom: 10px;
-        }
+      /* Form Styles */
+      .form-group {
+        margin-bottom: 10px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      .form-group input,
+      .form-group select,
+      .form-row select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      #inclusionsOutput {
+        min-height: 60px;
+        background: #f9f9f9;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        word-wrap: break-word;
+        color: #555;
+      }
 
-        label {
-            display: block;
-            font-size: 0.8rem;
-            margin-bottom: 5px;
-        }
+      /* Context Menu Styles */
+      .context-menu {
+        position: fixed;
+        z-index: 1000;
+        background: var(--panel-bg);
+        border: 1px solid #ccc;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        display: none; /* Hidden by default */
+        font-size: 0.9rem;
+        min-width: 110px;
+      }
+      .context-menu ul {
+        list-style: none;
+        margin: 0;
+        padding: 5px 0;
+      }
+      .context-menu li {
+        padding: 8px 15px;
+        cursor: pointer;
+        position: relative;
+      }
+      .context-menu li:hover {
+        background-color: #eef;
+        color: var(--accent-color);
+      }
+      .context-menu .has-submenu::after {
+        content: "▶";
+        position: absolute;
+        right: 10px;
+        font-size: 0.7rem;
+        color: #777;
+      }
+      .context-menu .submenu {
+        display: none;
+        position: absolute;
+        left: 100%;
+        top: -5px; /* Align with parent li padding */
+        background: var(--panel-bg);
+        border: 1px solid #ccc;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+      }
 
-        input[type="range"] {
-            width: 100%;
-        }
+      /* Canvas Controls */
+      .canvas-controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        gap: 10px;
+        z-index: 10;
+      }
+      .canvas-btn {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 8px;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        width: 40px;
+        height: 40px;
+      }
+      .canvas-btn:hover {
+        background: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+      .canvas-btn svg {
+        width: 24px;
+        height: 24px;
+        fill: #555;
+      }
+      #delete-btn svg {
+        fill: #7f8c8d;
+      }
+      #delete-btn:hover svg {
+        fill: #e74c3c;
+      }
+      #delete-btn:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      #delete-btn:disabled:hover svg {
+        fill: #7f8c8d;
+      }
 
-        .btn {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 5px;
-        }
+      /* Modal Styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      .modal-content {
+        background-color: #fff;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 95%;
+        max-width: 900px;
+        border-radius: 8px;
+        position: relative;
+      }
+      .close-modal {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .close-modal:hover {
+        color: black;
+      }
+      .results-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        font-size: 0.9rem;
+      }
+      .results-table th,
+      .results-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      .results-table th {
+        background-color: var(--primary-color);
+        color: white;
+      }
+      .results-table tr:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+      .accuracy-high {
+        color: green;
+        font-weight: bold;
+      }
+      .accuracy-med {
+        color: orange;
+        font-weight: bold;
+      }
+      .accuracy-low {
+        color: red;
+        font-weight: bold;
+      }
 
-        .btn-danger {
-            background-color: #e74c3c;
-        }
-
-        .btn:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        @media (max-width: 768px) {
-            body {
-                height: auto;
-                min-height: 100vh;
-            }
-            .main-container {
-                flex-direction: column;
-                overflow: visible;
-            }
-            .sidebar {
-                width: 100%;
-                order: 2;
-                box-sizing: border-box;
-            }
-            .canvas-area {
-                order: 1;
-                padding: 10px;
-                flex: none;
-            }
-            canvas {
-                width: 100%;
-                height: auto;
-            }
-        }
-
-        /* Accordion Styles */
-        .accordion-item {
-            border-bottom: 1px solid #ddd;
-        }
-        .accordion-item:last-child {
-            border-bottom: none;
-        }
-        .accordion-header {
-            width: 100%;
-            background: #fff;
-            border: none;
-            outline: none;
-            padding: 15px;
-            text-align: left;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #333;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background-color 0.2s;
-        }
-        .accordion-header:hover {
-            background-color: #f9f9f9;
-        }
-        .accordion-header.active {
-            background-color: #eef2ff;
-            color: var(--accent-color);
-        }
-        .accordion-header .icon {
-            transition: transform 0.3s ease;
-            font-size: 0.8rem;
-        }
-        .accordion-header.active .icon {
-            transform: rotate(180deg);
-        }
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            background-color: #fff;
-        }
-        .accordion-body {
-            padding: 5px;
-            display: flex;
-            flex-direction: column;
-        }
-        .section-title {
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin: 10px 0 5px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 3px;
-        }
-        .form-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .form-row > div {
-            flex: 1;
-        }
-        .output-list {
-            border: 1px solid #ccc;
-            background: #fafafa;
-            padding: 5px;
-            border-radius: 4px;
-            min-height: 40px;
-            font-size: 0.85rem;
-        }
-        .tag {
-            display: inline-block;
-            background: #e1ecf4;
-            color: #2c3e50;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin: 2px;
-            font-size: 0.8rem;
-            border: 1px solid #ccf;
-            cursor: pointer;
-        }
-        .tag:hover {
-            background-color: #d0e1ed;
-        }
-        .tag::after {
-            content: " ×";
-            font-weight: bold;
-            color: #7f8c8d;
-        }
-        .predefined-tag {
-            display: inline-block;
-            background: #f0f0f0;
-            color: #333;
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin: 2px;
-            font-size: 0.8rem;
-            border: 1px solid #ccc;
-            cursor: pointer;
-        }
-        .predefined-tag:hover {
-            background-color: #dcdcdc;
-        }
-
-        /* Form Styles */
-        .form-group {
-            margin-bottom: 10px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .form-group input, .form-group select, .form-row select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        #inclusionsOutput {
-            min-height: 60px;
-            background: #f9f9f9;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            line-height: 1.4;
-            word-wrap: break-word;
-            color: #555;
-        }
-
-        /* Context Menu Styles */
-        .context-menu {
-            position: fixed;
-            z-index: 1000;
-            background: var(--panel-bg);
-            border: 1px solid #ccc;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            border-radius: 4px;
-            display: none; /* Hidden by default */
-            font-size: 0.9rem;
-            min-width: 110px;
-        }
-        .context-menu ul {
-            list-style: none;
-            margin: 0;
-            padding: 5px 0;
-        }
-        .context-menu li {
-            padding: 8px 15px;
-            cursor: pointer;
-            position: relative;
-        }
-        .context-menu li:hover {
-            background-color: #eef;
-            color: var(--accent-color);
-        }
-        .context-menu .has-submenu::after {
-            content: '▶';
-            position: absolute;
-            right: 10px;
-            font-size: 0.7rem;
-            color: #777;
-        }
-        .context-menu .submenu {
-            display: none;
-            position: absolute;
-            left: 100%;
-            top: -5px; /* Align with parent li padding */
-            background: var(--panel-bg);
-            border: 1px solid #ccc;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            border-radius: 4px;
-        }
-
-        /* Canvas Controls */
-        .canvas-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            gap: 10px;
-            z-index: 10;
-        }
-        .canvas-btn {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 8px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            width: 40px;
-            height: 40px;
-        }
-        .canvas-btn:hover {
-            background: #fff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        .canvas-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: #555;
-        }
-        #delete-btn svg { fill: #7f8c8d; }
-        #delete-btn:hover svg { fill: #e74c3c; }
-        #delete-btn:disabled { opacity: 0.5; cursor: default; }
-        #delete-btn:disabled:hover svg { fill: #7f8c8d; }
-
-        /* Modal Styles */
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
-        .modal-content { background-color: #fff; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 95%; max-width: 900px; border-radius: 8px; position: relative; }
-        .close-modal { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .close-modal:hover { color: black; }
-        .results-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
-        .results-table th, .results-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .results-table th { background-color: var(--primary-color); color: white; }
-        .results-table tr:nth-child(even) { background-color: #f2f2f2; }
-        .accuracy-high { color: green; font-weight: bold; }
-        .accuracy-med { color: orange; font-weight: bold; }
-        .accuracy-low { color: red; font-weight: bold; }
+      #header-search-btn {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: auto;
+        margin: 0;
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <header>
-        <h3>Diamond Grading Report</h3>
+      <h3>Diamond Grading Report</h3>
+      <button id="header-search-btn" class="btn">Search Report</button>
     </header>
 
     <div class="main-container">
-        <!-- Sidebar: Palette & Controls -->
-        <div class="sidebar">
-
-            <!-- Accordion Item 2: Stone Details -->
-            <div class="accordion-item">
-                <button class="accordion-header">
-                    Stone Details
-                    <span class="icon">▼</span>
-                </button>
-                <div class="accordion-content">
-                    <div class="accordion-body">
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 3;">
-                                <label>Name</label>
-                                <input type="text" id="studentName" placeholder="Enter Name">
-                            </div>
-                            <div class="form-group" style="flex: 1;">
-                                <label>Stone Number</label>
-                                <input type="text" id="stoneNumber" placeholder="Enter Stone Number">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 3;">
-                                <label>Shape and Cut</label>
-                                <select id="shapeCut">
-                                    <option value="Round Brilliant">Round Brilliant</option>
-                                    <option value="Oval">Oval Brilliant</option>
-                                    <option value="Princess">Princess</option>
-                                    <option value="Pear">Pear Brilliant</option>
-                                    <option value="Cushion">Cushion Brilliant</option>
-                                    <option value="Emerald">Emerald Step</option>
-                                    <option value="baguette">Baguette Step</option>
-                                    <option value="Radiant">Radiant</option>
-                                    <option value="Marquise">Marquise Brilliant</option>
-                                    <option value="Asscher">Asscher</option>
-                                    <option value="Heart">Heart Brilliant</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="flex: 1;">
-                                <label>Carat Weight</label>
-                                <input type="number" id="caratWeight" step="0.01" placeholder="0.00">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Clarity</label>
-                                <select id="clarity">
-                                    <option value="FL">FL</option>
-                                    <option value="IF">IF</option>
-                                    <option value="VVS1">VVS1</option>
-                                    <option value="VVS2">VVS2</option>
-                                    <option value="VS1">VS1</option>
-                                    <option value="VS2">VS2</option>
-                                    <option value="SI1">SI1</option>
-                                    <option value="SI2">SI2</option>
-                                    <option value="I1">I1</option>
-                                    <option value="I2">I2</option>
-                                    <option value="I3">I3</option>
-                                </select>
-                            </div>
-                            <div class="form-group"> <!-- Input field for color information -->
-                                <label>Color</label>
-                                <select id="colorSelect"></select>
-                            </div>
-                            <div class="form-group">
-                                <label>Fluorescence</label>
-                                <select id="fluorescence">
-                                    <option value="None">None</option>
-                                    <option value="Very Slight">Very Slight</option>
-                                    <option value="Slight">Slight</option>
-                                    <option value="Strong">Strong</option>
-                                    <option value="Very Strong">Very Strong</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Inclusions Output</label>
-                            <div id="inclusionsOutput">No inclusions yet</div>
-                        </div>
-                    </div>
+      <!-- Sidebar: Palette & Controls -->
+      <div class="sidebar">
+        <!-- Accordion Item 1: Stone Details -->
+        <div class="accordion-item">
+          <button class="accordion-header">
+            Stone Details
+            <span class="icon">▼</span>
+          </button>
+          <div class="accordion-content">
+            <div class="accordion-body">
+              <div class="form-row">
+                <div class="form-group" style="flex: 3">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    id="studentName"
+                    placeholder="Enter Name"
+                  />
                 </div>
-            </div>
-
-            <!-- Accordion Item 3: Proportions & Grading -->
-            <div class="accordion-item">
-                <button class="accordion-header">
-                    Proportions & Grading
-                    <span class="icon">▼</span>
-                </button>
-                <div class="accordion-content">
-                    <div class="accordion-body">
-                        
-                        <div class="section-title">Measurements (mm)</div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Max Diam</label><input type="number" step="0.01" id="measMax" oninput="updateMeasurements()"></div>
-                            <div class="form-group"><label>Min Diam</label><input type="number" step="0.01" id="measMin" oninput="updateMeasurements()"></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Avg Diam</label><input type="number" step="0.01" id="measAvg" readonly style="background-color: #eee;"></div>
-                            <div class="form-group"><label>Height</label><input type="number" step="0.01" id="measHeight" oninput="updateMeasurements()"></div>
-                        </div>
-
-                        <div class="section-title">Proportions</div>
-                        
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 2;"><label>Total Depth %</label><input type="number" step="0.1" id="propDepth" oninput="updateProportions('depth')"></div>
-                            <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeDepth">
-                                <option value="">Select...</option>
-                                <option>Ideal</option>
-                                <option>Excellent</option>
-                                <option>Very Good</option>
-                                <option>Good</option>
-                                <option>Fair</option>
-                                <option>Poor</option>
-                            </select></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 2;"><label>Table Size %</label><input type="number" step="1" id="propTable"></div>
-                            <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeTable">
-                                <option value="">Select...</option>
-                                <option>Ideal</option>
-                                <option>Excellent</option>
-                                <option>Very Good</option>
-                                <option>Good</option>
-                                <option>Fair</option>
-                                <option>Poor</option>
-                            </select></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 2;"><label>Pavilion Depth %</label><input type="number" step="0.1" id="propPavilion" oninput="updateProportions('pavilion')"></div>
-                            <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradePavilion">
-                                <option value="">Select...</option>
-                                <option>Ideal</option>
-                                <option>Excellent</option>
-                                <option>Very Good</option>
-                                <option>Good</option>
-                                <option>Fair</option>
-                                <option>Poor</option>
-                            </select></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 2;"><label>Girdle Thick %</label><input type="number" step="0.1" id="propGirdle" oninput="updateProportions('girdle')"></div>
-                            <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeGirdle">
-                                <option value="">Select...</option>
-                                <option>Ideal</option>
-                                <option>Excellent</option>
-                                <option>Very Good</option>
-                                <option>Good</option>
-                                <option>Fair</option>
-                                <option>Poor</option>
-                            </select></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 2;"><label>Crown Height %</label><input type="number" step="0.1" id="propCrownH" oninput="updateProportions('crown')"></div>
-                            <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeCrownH">
-                                <option value="">Select...</option>
-                                <option>Ideal</option>
-                                <option>Excellent</option>
-                                <option>Very Good</option>
-                                <option>Good</option>
-                                <option>Fair</option>
-                                <option>Poor</option>
-                            </select></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 2;"><label>Crown Angle (°)</label><input type="number" step="0.1" id="propCrownA" readonly style="background-color: #eee;"></div>
-                            <div class="form-group" style="flex: 1;"><label>Grade</label><select id="gradeCrownA">
-                                <option value="">Select...</option>
-                                <option>Ideal</option>
-                                <option>Excellent</option>
-                                <option>Very Good</option>
-                                <option>Good</option>
-                                <option>Fair</option>
-                                <option>Poor</option>
-                            </select></div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Final Proportion Grade</label>
-                            <select id="gradeFinalProp">
-                                <option value="">Select...</option>
-                                <option>Ideal</option>
-                                <option>Excellent</option>
-                                <option>Very Good</option>
-                                <option>Good</option>
-                                <option>Fair</option>
-                                <option>Poor</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Culet Condition</label>
-                            <select id="culetCondition">
-                                <option value="">Select...</option>
-                                <option value="Pointed">Pointed</option>
-                                <option value="None">None</option>
-                                <option value="Abraided">Abraided</option>
-                                <option value="Chipped">Chipped</option>
-                                <option value="Damaged">Damaged</option>
-                                <option value="Faceted (Very Small)">Faceted (Very Small)</option>
-                                <option value="Faceted (Small)">Faceted (Small)</option>
-                                <option value="Faceted (Medium)">Faceted (Medium)</option>
-                                <option value="Faceted (Large)">Faceted (Large)</option>
-                            </select>
-                        </div>
-
-                        <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
-
-                        <div class="section-title">Polish (Blemishes)</div>
-                        <div class="form-group">
-                            <label>Blemishes List</label>
-                            <div id="blemishesOutput" class="output-list" style="color:#777; font-style:italic;">No blemishes yet</div>
-                        </div>
-                        <div class="form-group">
-                            <label>Polish Grade</label>
-                            <select id="gradePolish">
-                                <option value="">Select...</option>
-                                <option>Excellent</option>
-                                <option>Very Good</option>
-                                <option>Good</option>
-                                <option>Fair</option>
-                                <option>Poor</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Culet Condition</label>
-                            <select id="culetCondition">
-                                <option value="">Select...</option>
-                                <option>Pointed</option>
-                                <option>None</option>
-                                <option>Very small faceted</option>
-                                <option>Small faceted</option>
-                                <option>Medium faceted</option>
-                                <option>Large faceted</option>
-                                <option>Abraded</option>
-                                <option>Chipped</option>
-                                <option>Damaged</option>
-                            </select>
-                        </div>
-
-                        <div class="section-title">Symmetry</div>
-                        <div class="form-group">
-                            <label>Symmetry Variations (Click to add)</label>
-                            <div id="predefinedSymmetryTags" style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">
-                                <span class="predefined-tag">Off-center table</span>
-                                <span class="predefined-tag">Off-center culet</span>
-                                <span class="predefined-tag">Irregular Girdle</span>
-                                <span class="predefined-tag">Facets out of alignment</span>
-                                <span class="predefined-tag">Open facets</span>
-                                <span class="predefined-tag">Irregular facets</span>
-                                <span class="predefined-tag">Stone not round</span>
-                                <span class="predefined-tag">Extra Facet</span>
-                                <span class="predefined-tag">Natural</span>
-                            </div>
-                            <label>Selected Variations</label>
-                            <div id="symmetryOutput" class="output-list"></div>
-                        </div>
-                        <div class="form-group">
-                            <label>Symmetry Grade</label>
-                            <select id="gradeSym">
-                                <option value="">Select...</option>
-                                <option>Excellent</option>
-                                <option>Very Good</option>
-                                <option>Good</option>
-                                <option>Fair</option>
-                                <option>Poor</option>
-                            </select>
-                        </div>
-
-                    </div>
+                <div class="form-group" style="flex: 1">
+                  <label>Stone Number</label>
+                  <input
+                    type="text"
+                    id="stoneNumber"
+                    placeholder="Enter Stone Number"
+                  />
                 </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group" style="flex: 3">
+                  <label>Shape and Cut</label>
+                  <select id="shapeCut">
+                    <option value="Round Brilliant">Round Brilliant</option>
+                    <option value="Oval">Oval Brilliant</option>
+                    <option value="Princess">Princess</option>
+                    <option value="Pear">Pear Brilliant</option>
+                    <option value="Cushion">Cushion Brilliant</option>
+                    <option value="Emerald">Emerald Step</option>
+                    <option value="baguette">Baguette Step</option>
+                    <option value="Radiant">Radiant</option>
+                    <option value="Marquise">Marquise Brilliant</option>
+                    <option value="Asscher">Asscher</option>
+                    <option value="Heart">Heart Brilliant</option>
+                  </select>
+                </div>
+                <div class="form-group" style="flex: 1">
+                  <label>Carat Weight</label>
+                  <input
+                    type="number"
+                    id="caratWeight"
+                    step="0.01"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Clarity</label>
+                  <select id="clarity">
+                    <option value="FL">FL</option>
+                    <option value="IF">IF</option>
+                    <option value="VVS1">VVS1</option>
+                    <option value="VVS2">VVS2</option>
+                    <option value="VS1">VS1</option>
+                    <option value="VS2">VS2</option>
+                    <option value="SI1">SI1</option>
+                    <option value="SI2">SI2</option>
+                    <option value="I1">I1</option>
+                    <option value="I2">I2</option>
+                    <option value="I3">I3</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <!-- Input field for color information -->
+                  <label>Color</label>
+                  <select id="colorSelect"></select>
+                </div>
+                <div class="form-group">
+                  <label>Fluorescence</label>
+                  <select id="fluorescence">
+                    <option value="None">None</option>
+                    <option value="Very Slight">Very Slight</option>
+                    <option value="Slight">Slight</option>
+                    <option value="Strong">Strong</option>
+                    <option value="Very Strong">Very Strong</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Inclusions Output</label>
+                <div id="inclusionsOutput">No inclusions yet</div>
+              </div>
             </div>
-
-            <!-- Submit Button -->
-            <div style="padding: 15px; border-top: 1px solid #ddd;">
-                <button id="submit-grading-btn" class="btn" style="background-color: #27ae60; font-weight:bold;">Submit Grading Report</button>
-            </div>
+          </div>
         </div>
 
-        <!-- Main Canvas -->
-        <div class="canvas-area">
-            <canvas id="gradingCanvas" width="800" height="460"></canvas>
-            <div class="canvas-controls">
-                <button id="delete-btn" class="canvas-btn" title="Delete Selected" disabled>
-                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-                </button>
-                <button id="clear-all" class="canvas-btn" title="Clear Chart">
-                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-                </button>
-                <button id="save-btn" class="canvas-btn" title="Download Image">
-                    <svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
-                </button>
+        <!-- Accordion Item 3: Proportions & Grading -->
+        <div class="accordion-item">
+          <button class="accordion-header">
+            Proportions & Grading
+            <span class="icon">▼</span>
+          </button>
+          <div class="accordion-content">
+            <div class="accordion-body">
+              <div class="section-title">Measurements (mm)</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Max Diam</label
+                  ><input
+                    type="number"
+                    step="0.01"
+                    id="measMax"
+                    oninput="updateMeasurements()"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Min Diam</label
+                  ><input
+                    type="number"
+                    step="0.01"
+                    id="measMin"
+                    oninput="updateMeasurements()"
+                  />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Avg Diam</label
+                  ><input
+                    type="number"
+                    step="0.01"
+                    id="measAvg"
+                    readonly
+                    style="background-color: #eee"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Height</label
+                  ><input
+                    type="number"
+                    step="0.01"
+                    id="measHeight"
+                    oninput="updateMeasurements()"
+                  />
+                </div>
+              </div>
+
+              <div class="section-title">Proportions</div>
+
+              <div class="form-row">
+                <div class="form-group" style="flex: 2">
+                  <label>Total Depth %</label
+                  ><input
+                    type="number"
+                    step="0.1"
+                    id="propDepth"
+                    oninput="updateProportions('depth')"
+                  />
+                </div>
+                <div class="form-group" style="flex: 1">
+                  <label>Grade</label
+                  ><select id="gradeDepth">
+                    <option value="">Select...</option>
+                    <option>Ideal</option>
+                    <option>Excellent</option>
+                    <option>Very Good</option>
+                    <option>Good</option>
+                    <option>Fair</option>
+                    <option>Poor</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group" style="flex: 2">
+                  <label>Table Size %</label
+                  ><input type="number" step="1" id="propTable" />
+                </div>
+                <div class="form-group" style="flex: 1">
+                  <label>Grade</label
+                  ><select id="gradeTable">
+                    <option value="">Select...</option>
+                    <option>Ideal</option>
+                    <option>Excellent</option>
+                    <option>Very Good</option>
+                    <option>Good</option>
+                    <option>Fair</option>
+                    <option>Poor</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group" style="flex: 2">
+                  <label>Pavilion Depth %</label
+                  ><input
+                    type="number"
+                    step="0.1"
+                    id="propPavilion"
+                    oninput="updateProportions('pavilion')"
+                  />
+                </div>
+                <div class="form-group" style="flex: 1">
+                  <label>Grade</label
+                  ><select id="gradePavilion">
+                    <option value="">Select...</option>
+                    <option>Ideal</option>
+                    <option>Excellent</option>
+                    <option>Very Good</option>
+                    <option>Good</option>
+                    <option>Fair</option>
+                    <option>Poor</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group" style="flex: 2">
+                  <label>Girdle Thick %</label
+                  ><input
+                    type="number"
+                    step="0.1"
+                    id="propGirdle"
+                    oninput="updateProportions('girdle')"
+                  />
+                </div>
+                <div class="form-group" style="flex: 1">
+                  <label>Grade</label
+                  ><select id="gradeGirdle">
+                    <option value="">Select...</option>
+                    <option>Ideal</option>
+                    <option>Excellent</option>
+                    <option>Very Good</option>
+                    <option>Good</option>
+                    <option>Fair</option>
+                    <option>Poor</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group" style="flex: 2">
+                  <label>Crown Height %</label
+                  ><input
+                    type="number"
+                    step="0.1"
+                    id="propCrownH"
+                    oninput="updateProportions('crown')"
+                  />
+                </div>
+                <div class="form-group" style="flex: 1">
+                  <label>Grade</label
+                  ><select id="gradeCrownH">
+                    <option value="">Select...</option>
+                    <option>Ideal</option>
+                    <option>Excellent</option>
+                    <option>Very Good</option>
+                    <option>Good</option>
+                    <option>Fair</option>
+                    <option>Poor</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group" style="flex: 2">
+                  <label>Crown Angle (°)</label
+                  ><input
+                    type="number"
+                    step="0.1"
+                    id="propCrownA"
+                    readonly
+                    style="background-color: #eee"
+                  />
+                </div>
+                <div class="form-group" style="flex: 1">
+                  <label>Grade</label
+                  ><select id="gradeCrownA">
+                    <option value="">Select...</option>
+                    <option>Ideal</option>
+                    <option>Excellent</option>
+                    <option>Very Good</option>
+                    <option>Good</option>
+                    <option>Fair</option>
+                    <option>Poor</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Final Proportion Grade</label>
+                <select id="gradeFinalProp">
+                  <option value="">Select...</option>
+                  <option>Ideal</option>
+                  <option>Excellent</option>
+                  <option>Very Good</option>
+                  <option>Good</option>
+                  <option>Fair</option>
+                  <option>Poor</option>
+                </select>
+              </div>
+
+              <hr
+                style="border: 0; border-top: 1px solid #ddd; margin: 15px 0"
+              />
+
+              <div class="section-title">Polish (Blemishes)</div>
+              <div class="form-group">
+                <label>Blemishes List</label>
+                <div
+                  id="blemishesOutput"
+                  class="output-list"
+                  style="color: #777; font-style: italic"
+                >
+                  No blemishes yet
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Culet Condition</label>
+                <select id="culetCondition">
+                  <option value="">Select...</option>
+                  <option>Pointed</option>
+                  <option>None</option>
+                  <option>Very small faceted</option>
+                  <option>Small faceted</option>
+                  <option>Medium faceted</option>
+                  <option>Large faceted</option>
+                  <option>Abraded</option>
+                  <option>Chipped</option>
+                  <option>Damaged</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Polish Grade</label>
+                <select id="gradePolish">
+                  <option value="">Select...</option>
+                  <option>Excellent</option>
+                  <option>Very Good</option>
+                  <option>Good</option>
+                  <option>Fair</option>
+                  <option>Poor</option>
+                </select>
+              </div>
+
+              <div class="section-title">Symmetry</div>
+              <div class="form-group">
+                <label>Symmetry Variations (Click to add)</label>
+                <div
+                  id="predefinedSymmetryTags"
+                  style="
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 5px;
+                    margin-bottom: 10px;
+                  "
+                >
+                  <span class="predefined-tag">Off-center table</span>
+                  <span class="predefined-tag">Off-center culet</span>
+                  <span class="predefined-tag">Irregular Girdle</span>
+                  <span class="predefined-tag">Facets out of alignment</span>
+                  <span class="predefined-tag">Open facets</span>
+                  <span class="predefined-tag">Irregular facets</span>
+                  <span class="predefined-tag">Stone not round</span>
+                  <span class="predefined-tag">Extra Facet</span>
+                  <span class="predefined-tag">Natural</span>
+                </div>
+                <label>Selected Variations</label>
+                <div id="symmetryOutput" class="output-list"></div>
+              </div>
+              <div class="form-group">
+                <label>Symmetry Grade</label>
+                <select id="gradeSym">
+                  <option value="">Select...</option>
+                  <option>Excellent</option>
+                  <option>Very Good</option>
+                  <option>Good</option>
+                  <option>Fair</option>
+                  <option>Poor</option>
+                </select>
+              </div>
             </div>
+          </div>
         </div>
+
+        <!-- Submit Button -->
+        <div style="padding: 15px; border-top: 1px solid #ddd">
+          <button
+            id="submit-grading-btn"
+            class="btn"
+            style="background-color: #27ae60; font-weight: bold"
+          >
+            Submit Grading Report
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Canvas -->
+      <div class="canvas-area">
+        <canvas id="gradingCanvas" width="800" height="460"></canvas>
+        <div class="canvas-controls">
+          <button
+            id="delete-btn"
+            class="canvas-btn"
+            title="Delete Selected"
+            disabled
+          >
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+              />
+            </svg>
+          </button>
+          <button id="clear-all" class="canvas-btn" title="Clear Chart">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+              />
+            </svg>
+          </button>
+          <button id="save-btn" class="canvas-btn" title="Download Image">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
 
     <div id="contextMenu" class="context-menu">
-        <ul>
-            <li class="has-submenu" style="color: red;">Inclusions
-                <ul class="submenu">
-                </ul>
-            </li>
-            <li class="has-submenu" style="color: green;">Blemishes
-                <ul class="submenu">
-                </ul>
-            </li>
-        </ul>
+      <ul>
+        <li class="has-submenu" style="color: red">
+          Inclusions
+          <ul class="submenu"></ul>
+        </li>
+        <li class="has-submenu" style="color: green">
+          Blemishes
+          <ul class="submenu"></ul>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Search Modal -->
+    <div id="searchModal" class="modal">
+      <div class="modal-content" style="max-width: 400px;">
+        <span class="close-modal" onclick="document.getElementById('searchModal').style.display='none'">&times;</span>
+        <h2>Search Report</h2>
+        <div class="form-group">
+          <label>Name</label>
+          <input
+            type="text"
+            id="searchName"
+            placeholder="Enter Name to Search"
+          />
+        </div>
+        <div class="form-group">
+          <label>Stone Number</label>
+          <input
+            type="text"
+            id="searchStoneNumber"
+            placeholder="Enter Stone Number"
+          />
+        </div>
+        <button id="search-btn" class="btn">Search Report</button>
+        <div id="loaded-image-container" style="margin-top: 15px; display: none">
+          <label>Saved Plotting</label>
+          <img
+            id="loaded-image"
+            style="width: 100%; border: 1px solid #ddd; border-radius: 4px;"
+          />
+        </div>
+      </div>
     </div>
 
     <!-- Results Modal -->
     <div id="resultsModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 id="resultsTitle">Grading Results</h2>
-            <div id="resultsBody"></div>
-            <div style="text-align: right; margin-top: 20px;">
-                <button class="btn" onclick="document.getElementById('resultsModal').style.display='none'">Close</button>
-            </div>
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2 id="resultsTitle">Grading Results</h2>
+        <div id="resultsBody"></div>
+        <div style="text-align: right; margin-top: 20px">
+          <button
+            class="btn"
+            onclick="
+              document.getElementById('resultsModal').style.display = 'none'
+            "
+          >
+            Close
+          </button>
         </div>
+      </div>
     </div>
 
     <script>
-        /**
-         * Diamond Grading Application Logic
-         */
-        const canvas = document.getElementById('gradingCanvas');
-        const ctx = canvas.getContext('2d');
+      /**
+       * Diamond Grading Application Logic
+       */
+      const canvas = document.getElementById("gradingCanvas");
+      const ctx = canvas.getContext("2d");
 
-        // UI Elements
-        const deleteBtn = document.getElementById('delete-btn');
-        const clearBtn = document.getElementById('clear-all');
-        const saveBtn = document.getElementById('save-btn');
+      // UI Elements
+      const deleteBtn = document.getElementById("delete-btn");
+      const clearBtn = document.getElementById("clear-all");
+      const saveBtn = document.getElementById("save-btn");
 
-        // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCGT0M5EP75KFiaQC5Y_4wCkT7iw1db9KGcpoXP-yEzv8HaEIWhhxTlIov3ZAUpeJf/exec";
+      // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+      const GOOGLE_SCRIPT_URL =
+        "https://script.google.com/macros/s/AKfycbxdSn_xxANG9Ahck5KohNGympILgPOmpPtPD0pU_9ejWzqD0SHXhw907fsCcwNJX6w/exec";
 
-        // State
-        let inclusions = []; // Array to store inclusion objects
-        let selectedInclusion = null;
-        let dragAction = null; // 'move', 'rotate', 'resize', 'pinch'
-        let dragStart = { x: 0, y: 0, val: 0 };
-        let initialPinchDist = 0;
-        let initialPinchAngle = 0; 
-        let potentialDeselect = false;
-        let longPressTimer;
-        const LONG_PRESS_DURATION = 500;
-        let touchStartPos = { x: 0, y: 0 };
-        let contextMenuPos = { x: 0, y: 0 };
+      // State
+      let inclusions = []; // Array to store inclusion objects
+      let selectedInclusion = null;
+      let dragAction = null; // 'move', 'rotate', 'resize', 'pinch'
+      let dragStart = { x: 0, y: 0, val: 0 };
+      let initialPinchDist = 0;
+      let initialPinchAngle = 0;
+      let potentialDeselect = false;
+      let longPressTimer;
+      const LONG_PRESS_DURATION = 500;
+      let touchStartPos = { x: 0, y: 0 };
+      let contextMenuPos = { x: 0, y: 0 };
 
-        // --- Accordion Logic ---
-        const accHeaders = document.querySelectorAll('.accordion-header');
+      // --- Accordion Logic ---
+      const accHeaders = document.querySelectorAll(".accordion-header");
 
-        accHeaders.forEach(header => {
-            header.addEventListener('click', () => {
-                const content = header.nextElementSibling;
-                const isActive = header.classList.contains('active');
+      accHeaders.forEach((header) => {
+        header.addEventListener("click", () => {
+          const content = header.nextElementSibling;
+          const isActive = header.classList.contains("active");
 
-                // Close others
-                document.querySelectorAll('.accordion-header').forEach(otherHeader => {
-                    if (otherHeader !== header) {
-                        otherHeader.classList.remove('active');
-                        otherHeader.nextElementSibling.style.maxHeight = null;
-                    }
-                });
-
-                // Toggle current
-                if (isActive) {
-                    header.classList.remove('active');
-                    content.style.maxHeight = null;
-                } else {
-                    header.classList.add('active');
-                    content.style.maxHeight = content.scrollHeight + "px";
-                }
+          // Close others
+          document
+            .querySelectorAll(".accordion-header")
+            .forEach((otherHeader) => {
+              if (otherHeader !== header) {
+                otherHeader.classList.remove("active");
+                otherHeader.nextElementSibling.style.maxHeight = null;
+              }
             });
+
+          // Toggle current
+          if (isActive) {
+            header.classList.remove("active");
+            content.style.maxHeight = null;
+          } else {
+            header.classList.add("active");
+            content.style.maxHeight = content.scrollHeight + "px";
+          }
         });
+      });
 
-        // Open first accordion by default
-        if (accHeaders.length > 0) {
-            accHeaders[0].click();
-        }
+      // Open first accordion by default
+      if (accHeaders.length > 0) {
+        accHeaders[0].click();
+      }
 
-        // --- Context Menu Logic ---
-        const contextMenu = document.getElementById('contextMenu');
-        const inclusionTypes = [
-            { 
-                name: 'Crystal', 
-                subtypes: [
-                    { name: 'Crystal', type: 'crystal', color: 'red' },
-                    { name: 'Dark Crystal', type: 'dark_crystal', color: 'red' }
-                ]
-            },
-            { name: 'Feather', type: 'feather', color: 'red' },
-            { 
-                name: 'Cloud', 
-                subtypes: [
-                    { name: 'Cloud', type: 'cloud', color: 'red' },
-                    { name: 'Linear Cloud', type: 'linear_cloud', color: 'red' }
-                ]
-            },
-            { name: 'Needle', type: 'needle', color: 'red' },
-            { name: 'Pinpoint', type: 'pinpoint', color: 'red' },
-            { name: 'Group of Pinpoints', type: 'group_pinpoints', color: 'red' },
-            { name: 'Knot', type: 'knot', color: 'red' },
-            { name: 'Cavity', type: 'cavity', color: 'red' },
-            { name: 'Chip', type: 'chip', color: 'red' },
-            { name: 'Indented Natural', type: 'indented_natural', color: 'red' },
-            { name: 'Percussion Mark', type: 'percussion_mark', color: 'red' },
-            { name: 'Etch Channel', type: 'etch_channel', color: 'red' },
-            { name: 'Twinning Wisp', type: 'twinning_wisp', color: 'red' },
-            { name: 'Laser Drill Hole', type: 'laser_drill', color: 'red' },
-            { name: 'Bearded Girdle', type: 'bearded_girdle', color: 'red' },
-        ];
-        const blemishTypes = [
-            { name: 'Extra Facet', type: 'extra_facet', color: 'green' },
-            { name: 'Natural', type: 'natural', color: 'green' },
-            { name: 'Nick', type: 'nick', color: 'green' },
-            { name: 'Abrasion', type: 'abrasion', color: 'green' },
-            { name: 'Scratch', type: 'scratch', color: 'green' },
-            { name: 'Burn Mark', type: 'burn_mark', color: 'green' },
-            { name: 'Polish Lines', type: 'polish_lines', color: 'green' },
-        ];
+      // --- Search Modal Logic ---
+      const headerSearchBtn = document.getElementById("header-search-btn");
+      const searchModal = document.getElementById("searchModal");
 
-        function populateContextMenu() {
-            const inclusionsList = contextMenu.querySelector('.has-submenu:nth-child(1) .submenu');
-            const blemishesList = contextMenu.querySelector('.has-submenu:nth-child(2) .submenu');
+      headerSearchBtn.addEventListener("click", () => {
+        searchModal.style.display = "block";
+      });
+      // Clicking outside the search modal is handled by generic window click listener below
+      // or added here specific for this modal
 
-            const createMenuItem = (item) => {
-                const li = document.createElement('li');
-                li.textContent = item.name;
-                
-                if (item.subtypes) {
-                    li.classList.add('has-submenu');
-                    const ul = document.createElement('ul');
-                    ul.className = 'submenu';
-                    item.subtypes.forEach(sub => ul.appendChild(createMenuItem(sub)));
-                    li.appendChild(ul);
-                } else {
-                    li.dataset.type = item.type;
-                    li.dataset.color = item.color;
-                }
-                return li;
-            };
+      // --- Context Menu Logic ---
+      const contextMenu = document.getElementById("contextMenu");
+      const inclusionTypes = [
+        {
+          name: "Crystal",
+          subtypes: [
+            { name: "Crystal", type: "crystal", color: "red" },
+            { name: "Dark Crystal", type: "dark_crystal", color: "red" },
+          ],
+        },
+        { name: "Feather", type: "feather", color: "red" },
+        {
+          name: "Cloud",
+          subtypes: [
+            { name: "Cloud", type: "cloud", color: "red" },
+            { name: "Linear Cloud", type: "linear_cloud", color: "red" },
+          ],
+        },
+        { name: "Needle", type: "needle", color: "red" },
+        { name: "Pinpoint", type: "pinpoint", color: "red" },
+        { name: "Group of Pinpoints", type: "group_pinpoints", color: "red" },
+        { name: "Knot", type: "knot", color: "red" },
+        { name: "Cavity", type: "cavity", color: "red" },
+        { name: "Chip", type: "chip", color: "red" },
+        { name: "Indented Natural", type: "indented_natural", color: "red" },
+        { name: "Percussion Mark", type: "percussion_mark", color: "red" },
+        { name: "Etch Channel", type: "etch_channel", color: "red" },
+        { name: "Twinning Wisp", type: "twinning_wisp", color: "red" },
+        { name: "Laser Drill Hole", type: "laser_drill", color: "red" },
+        { name: "Bearded Girdle", type: "bearded_girdle", color: "red" },
+      ];
+      const blemishTypes = [
+        { name: "Extra Facet", type: "extra_facet", color: "green" },
+        { name: "Natural", type: "natural", color: "green" },
+        { name: "Nick", type: "nick", color: "green" },
+        { name: "Abrasion", type: "abrasion", color: "green" },
+        { name: "Scratch", type: "scratch", color: "green" },
+        { name: "Burn Mark", type: "burn_mark", color: "green" },
+        { name: "Polish Lines", type: "polish_lines", color: "green" },
+      ];
 
-            inclusionTypes.forEach(item => inclusionsList.appendChild(createMenuItem(item)));
-            blemishTypes.forEach(item => blemishesList.appendChild(createMenuItem(item)));
+      function populateContextMenu() {
+        const inclusionsList = contextMenu.querySelector(
+          ".has-submenu:nth-child(1) .submenu",
+        );
+        const blemishesList = contextMenu.querySelector(
+          ".has-submenu:nth-child(2) .submenu",
+        );
 
-            contextMenu.addEventListener('click', e => {
-                if (e.target.tagName === 'LI' && e.target.dataset.type) {
-                    const type = e.target.dataset.type;
-                    const color = e.target.dataset.color || 'red';
-                    addInclusion(contextMenuPos.x, contextMenuPos.y, type, color);
-                    contextMenu.style.display = 'none';
-                }
-            });
+        const createMenuItem = (item) => {
+          const li = document.createElement("li");
+          li.textContent = item.name;
 
-            contextMenu.addEventListener('mouseover', (e) => {
-                const hoveredLi = e.target.closest('li');
-                if (!hoveredLi) return;
-
-                // --- Z-Index Management to prevent sibling overlap ---
-                // When a submenu opens, it might overlap its "uncle" elements.
-                // We elevate the z-index of the direct parent LI to ensure its
-                // submenu appears on top of any siblings.
-                const parentUlForZIndex = hoveredLi.parentElement;
-                Array.from(parentUlForZIndex.children).forEach(siblingLi => {
-                    if (siblingLi.tagName === 'LI') siblingLi.style.zIndex = 'auto';
-                });
-                hoveredLi.style.zIndex = 1;
-
-                const parentUl = hoveredLi.parentElement;
-                // Find all submenus that are direct children of the LIs in the current UL
-                const submenusInLevel = Array.from(parentUl.children)
-                    .map(li => li.querySelector(':scope > .submenu'))
-                    .filter(Boolean);
-
-                // Find the submenu of the item we're currently hovering over
-                const currentSubmenu = hoveredLi.querySelector(':scope > .submenu');
-
-                // Hide all submenus in the current level except for the current one
-                submenusInLevel.forEach(sm => {
-                    if (sm !== currentSubmenu) {
-                        sm.style.display = 'none';
-                    }
-                });
-
-                // If we are hovering an item with a submenu, show and position it
-                if (currentSubmenu) {
-                    currentSubmenu.style.display = 'block';
-
-                    // Reset to default right-side position to measure.
-                    currentSubmenu.style.right = 'auto';
-                    currentSubmenu.style.left = '100%';
-                    currentSubmenu.style.top = '-5px';
-
-                    const rect = currentSubmenu.getBoundingClientRect();
-                    const windowWidth = window.innerWidth;
-
-                    // --- Horizontal Positioning ---
-                    const parentSubmenu = hoveredLi.closest('.submenu');
-                    // A submenu is "flipped" if it's positioned from the right edge of its parent.
-                    const isParentFlipped = parentSubmenu && parentSubmenu.style.right === '100%';
-
-                    // Flip the submenu left if its parent is already flipped, or if it overflows the window.
-                    if (isParentFlipped || rect.right > windowWidth) {
-                        const parentRect = hoveredLi.getBoundingClientRect();
-                        const submenuWidth = rect.width;
-                        // Only flip if there's enough space on the left.
-                        if (parentRect.left - submenuWidth > 0) {
-                            currentSubmenu.style.left = 'auto';
-                            currentSubmenu.style.right = '100%';
-                        }
-                    }
-
-                    // --- Vertical Positioning ---
-                    const windowHeight = window.innerHeight;
-                    const finalRect = currentSubmenu.getBoundingClientRect();
-                    if (finalRect.bottom > windowHeight) {
-                        const overflow = finalRect.bottom - windowHeight + 5; // 5px for margin
-                        const currentRelativeTop = finalRect.top - hoveredLi.getBoundingClientRect().top;
-                        currentSubmenu.style.top = `${currentRelativeTop - overflow}px`;
-                    }
-                }
-            });
-
-            contextMenu.addEventListener('mouseleave', () => {
-                // When the mouse leaves the entire menu, hide all submenus.
-                const allSubmenus = contextMenu.querySelectorAll('.submenu');
-                allSubmenus.forEach(sm => {
-                    sm.style.display = 'none';
-                });
-            });
-        }
-
-        // --- Form Logic ---
-        // Populate Color Dropdown
-        const colorSelect = document.getElementById('colorSelect');
-        for (let i = 68; i <= 90; i++) { // ASCII D to Z
-            const letter = String.fromCharCode(i);
-            const opt = document.createElement('option');
-            opt.value = letter;
-            opt.textContent = letter;
-            colorSelect.appendChild(opt);
-        }
-
-        function updateMeasurements() {
-            const max = parseFloat(document.getElementById('measMax').value);
-            const min = parseFloat(document.getElementById('measMin').value);
-            const height = parseFloat(document.getElementById('measHeight').value);
-            const avgInput = document.getElementById('measAvg');
-            const depthInput = document.getElementById('propDepth');
-            const tableInput = document.getElementById('propTable');
-            const crownHInput = document.getElementById('propCrownH');
-            const crownAInput = document.getElementById('propCrownA');
-
-            if (!isNaN(max) && !isNaN(min)) {
-                const avg = (max + min) / 2;
-                avgInput.value = avg.toFixed(2);
-                
-                if (!isNaN(height) && avg > 0) {
-                    depthInput.value = ((height / avg) * 100).toFixed(1);
-                }
-
-                // Auto-calculate Crown Angle: tan(angle) = CrownHeight% / ((100% - Table%) / 2)
-                const ch = parseFloat(crownHInput.value);
-                const table = parseFloat(tableInput.value);
-                if (!isNaN(ch) && !isNaN(table) && table < 100) {
-                    const angleRad = Math.atan(ch / ((100 - table) / 2));
-                    crownAInput.value = (angleRad * (180 / Math.PI)).toFixed(1);
-                }
-            } else {
-                avgInput.value = '';
-            }
-        }
-
-        function updateProportions(changedField) {
-            const depth = parseFloat(document.getElementById('propDepth').value) || 0;
-            const pav = parseFloat(document.getElementById('propPavilion').value) || 0;
-            const girdle = parseFloat(document.getElementById('propGirdle').value) || 0;
-            const crown = parseFloat(document.getElementById('propCrownH').value) || 0;
-
-            if (changedField === 'depth') {
-                // If total depth changes, adjust pavilion to match (Depth = Pav + Girdle + Crown)
-                document.getElementById('propPavilion').value = (depth - girdle - crown).toFixed(1);
-            } else if (changedField === 'pavilion') {
-                // If pavilion changes, adjust total depth
-                document.getElementById('propDepth').value = (pav + girdle + crown).toFixed(1);
-            } else if (changedField === 'girdle') {
-                // If girdle changes, adjust crown to keep depth/pavilion stable
-                document.getElementById('propCrownH').value = (depth - pav - girdle).toFixed(1);
-            } else if (changedField === 'crown') {
-                // If crown changes, adjust girdle to keep depth/pavilion stable
-                document.getElementById('propGirdle').value = (depth - pav - crown).toFixed(1);
-            }
-            
-            // Trigger crown angle calculation
-            updateMeasurements();
-        }
-
-        // Add listeners to trigger crown angle calculation when inputs change
-        document.getElementById('propTable').addEventListener('input', updateMeasurements);
-        document.getElementById('propCrownH').addEventListener('input', updateMeasurements);
-
-        // Clarity Calculation Logic
-        const claritySelect = document.getElementById('clarity');
-        
-        // Ranking from lightest to deepest impact
-        const clarityRankings = {
-            'pinpoint': 1,
-            'group_pinpoints': 2,
-            'needle': 3,
-            'linear_cloud': 4,
-            'cloud': 5,
-            'twinning_wisp': 6,
-            'crystal': 7,
-            'dark_crystal': 8,
-            'bearded_girdle': 9,
-            'indented_natural': 10,
-            'etch_channel': 11,
-            'feather': 12,
-            'laser_drill': 13,
-            'knot': 14,
-            'chip': 15,
-            'percussion_mark': 16,
-            'cavity': 17
+          if (item.subtypes) {
+            li.classList.add("has-submenu");
+            const ul = document.createElement("ul");
+            ul.className = "submenu";
+            item.subtypes.forEach((sub) => ul.appendChild(createMenuItem(sub)));
+            li.appendChild(ul);
+          } else {
+            li.dataset.type = item.type;
+            li.dataset.color = item.color;
+          }
+          return li;
         };
-        
-        function updateClarityGrade() {
-            const redInclusions = inclusions.filter(inc => inc.color !== 'green');
-            const greenBlemishes = inclusions.filter(inc => inc.color === 'green');
 
-            // 1. Base Grade Logic
-            if (redInclusions.length === 0) {
-                // No inclusions: FL if no blemishes, IF if blemishes exist
-                claritySelect.value = (greenBlemishes.length === 0) ? 'FL' : 'IF';
-                return;
-            }
+        inclusionTypes.forEach((item) =>
+          inclusionsList.appendChild(createMenuItem(item)),
+        );
+        blemishTypes.forEach((item) =>
+          blemishesList.appendChild(createMenuItem(item)),
+        );
 
-            let maxScore = 0;
-            let totalScore = 0;
-
-            redInclusions.forEach(inc => {
-                // A. Type Impact
-                const typeScore = clarityRankings[inc.type] || 5;
-
-                // B. Size Impact (1px to 144px+)
-                // Base width is 40. Scale 1 = 40px.
-                const sizePx = 40 * inc.scale;
-                let sizeMult = 1;
-                if (sizePx < 5) sizeMult = 0.2;       // Tiny
-                else if (sizePx < 20) sizeMult = 0.5; // Small
-                else if (sizePx < 50) sizeMult = 1.0; // Medium
-                else if (sizePx < 100) sizeMult = 2.0;// Large
-                else sizeMult = 4.0;                  // Very Large
-
-                // C. Location Impact
-                const isCrown = inc.x < 400;
-                // Centers calibrated to canvas/SVG alignment
-                const centerX = isCrown ? 185 : 616; 
-                const centerY = 240;
-                const dx = inc.x - centerX;
-                const dy = inc.y - centerY;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                const radius = 151; 
-
-                let locMult = 1.0;
-                if (isCrown) {
-                    const ratio = dist / radius;
-                    if (ratio <= 0.54) {
-                        // Table (Sacred Area)
-                        locMult = 3.0;
-                    } else if (ratio <= 0.77) {
-                        // Inner Bezel
-                        locMult = 2.0;
-                    } else {
-                        // Outer Bezel
-                        locMult = 1.2;
-                    }
-                } else {
-                    // Pavilion
-                    locMult = 1.0;
-                }
-
-                // D. Color Impact
-                let colorMult = 1.0;
-                if (inc.type === 'dark_crystal') colorMult = 1.5;
-
-                const score = typeScore * sizeMult * locMult * colorMult;
-                
-                if (score > maxScore) maxScore = score;
-                totalScore += score;
-            });
-
-            // Aggregation: Worst inclusion + 50% of others
-            const finalScore = maxScore + (totalScore - maxScore) * 0.5;
-
-            // Map Score to Grade
-            let grade = 'I3';
-            if (finalScore < 4) grade = 'VVS1';
-            else if (finalScore < 5) grade = 'VVS2';
-            else if (finalScore < 8) grade = 'VS1';
-            else if (finalScore < 18) grade = 'VS2';
-            else if (finalScore < 35) grade = 'SI1';
-            else if (finalScore < 60) grade = 'SI2';
-            else if (finalScore < 100) grade = 'I1';
-            else if (finalScore < 200) grade = 'I2';
-
-            claritySelect.value = grade;
-        }
-        // --- Symmetry Variations Logic ---
-        const symList = document.getElementById('symmetryOutput');
-        const predefinedSymTags = document.querySelectorAll('.predefined-tag');
-
-        predefinedSymTags.forEach(predefinedTag => {
-            predefinedTag.addEventListener('click', () => {
-                const val = predefinedTag.textContent;
-
-                // Check if it's already added to prevent duplicates
-                const existingTags = Array.from(symList.querySelectorAll('.tag'));
-                const alreadyExists = existingTags.some(t => t.textContent === val);
-
-                if (!alreadyExists) {
-                    const tag = document.createElement('span');
-                    tag.className = 'tag';
-                    tag.textContent = val;
-                    tag.onclick = () => tag.remove(); // Click to remove
-                    symList.appendChild(tag);
-                }
-            });
+        contextMenu.addEventListener("click", (e) => {
+          if (e.target.tagName === "LI" && e.target.dataset.type) {
+            const type = e.target.dataset.type;
+            const color = e.target.dataset.color || "red";
+            addInclusion(contextMenuPos.x, contextMenuPos.y, type, color);
+            contextMenu.style.display = "none";
+          }
         });
 
-        function getInclusionLocationString(inc) {
-            // 1. Determine View (Crown vs Pavilion)
-            const isCrown = inc.x < 400;
-            // 200 is the X-coordinate center of the Crown view, 600 is the X-coordinate center of the Pavilion view
-            const centerX = isCrown ? 185 : 616;
-            const centerY = 240;
+        contextMenu.addEventListener("mouseover", (e) => {
+          const hoveredLi = e.target.closest("li");
+          if (!hoveredLi) return;
 
-            // 2. Calculate Vector from Center
-            // Invert X for Pavilion to fix 3/9 o'clock orientation
-            const dx = isCrown ? (inc.x - centerX) : (centerX - inc.x);
-            const dy = inc.y - centerY;
+          // --- Z-Index Management to prevent sibling overlap ---
+          // When a submenu opens, it might overlap its "uncle" elements.
+          // We elevate the z-index of the direct parent LI to ensure its
+          // submenu appears on top of any siblings.
+          const parentUlForZIndex = hoveredLi.parentElement;
+          Array.from(parentUlForZIndex.children).forEach((siblingLi) => {
+            if (siblingLi.tagName === "LI") siblingLi.style.zIndex = "auto";
+          });
+          hoveredLi.style.zIndex = 1;
 
-            // 3. Calculate Clock Position
-            // atan2 returns angle from X-axis (3 o'clock). Y is down.
-            let angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
-            // Adjust so 12 o'clock is 0 (or 360)
-            let clockAngle = angleDeg + 90;
-            if (clockAngle < 0) clockAngle += 360;
-            
-            let clock = Math.round(clockAngle / 30);
-            if (clock === 0) clock = 12;
+          const parentUl = hoveredLi.parentElement;
+          // Find all submenus that are direct children of the LIs in the current UL
+          const submenusInLevel = Array.from(parentUl.children)
+            .map((li) => li.querySelector(":scope > .submenu"))
+            .filter(Boolean);
 
-            // 4. Determine Table vs Bezel (Crown only)
-            // Diamond Radius = (160 * 1.8) / 2 = 144
-            // Table is 54% of radius
-            const radius = 151;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+          // Find the submenu of the item we're currently hovering over
+          const currentSubmenu = hoveredLi.querySelector(":scope > .submenu");
 
-            // Ignore inclusions outside the diamond perimeter
-            if (dist > radius) return null;
+          // Hide all submenus in the current level except for the current one
+          submenusInLevel.forEach((sm) => {
+            if (sm !== currentSubmenu) {
+              sm.style.display = "none";
+            }
+          });
 
-            const tableRadius = radius * 0.54;
+          // If we are hovering an item with a submenu, show and position it
+          if (currentSubmenu) {
+            currentSubmenu.style.display = "block";
 
-            let locationStr = isCrown ? ((dist <= tableRadius) ? "Table" : "Bezel") : "Pavilion";
+            // Reset to default right-side position to measure.
+            currentSubmenu.style.right = "auto";
+            currentSubmenu.style.left = "100%";
+            currentSubmenu.style.top = "-5px";
 
-            // Format: feather Table@6
-            return `${inc.type.replace(/_/g, ' ')} ${locationStr}@${clock}`;
-        }
+            const rect = currentSubmenu.getBoundingClientRect();
+            const windowWidth = window.innerWidth;
 
-        function updateBlemishesOutput() {
-            const output = document.getElementById('blemishesOutput');
-            if (!output) return;
+            // --- Horizontal Positioning ---
+            const parentSubmenu = hoveredLi.closest(".submenu");
+            // A submenu is "flipped" if it's positioned from the right edge of its parent.
+            const isParentFlipped =
+              parentSubmenu && parentSubmenu.style.right === "100%";
 
-            const greenBlemishes = inclusions.filter(inc => inc.color === 'green');
-
-            if (greenBlemishes.length === 0) {
-                output.innerHTML = `<span style="color:#777; font-style:italic;">No blemishes yet</span>`;
-                return;
+            // Flip the submenu left if its parent is already flipped, or if it overflows the window.
+            if (isParentFlipped || rect.right > windowWidth) {
+              const parentRect = hoveredLi.getBoundingClientRect();
+              const submenuWidth = rect.width;
+              // Only flip if there's enough space on the left.
+              if (parentRect.left - submenuWidth > 0) {
+                currentSubmenu.style.left = "auto";
+                currentSubmenu.style.right = "100%";
+              }
             }
 
-            const text = greenBlemishes.map(getInclusionLocationString).filter(s => s !== null).join(', ');
-            output.textContent = text;
+            // --- Vertical Positioning ---
+            const windowHeight = window.innerHeight;
+            const finalRect = currentSubmenu.getBoundingClientRect();
+            if (finalRect.bottom > windowHeight) {
+              const overflow = finalRect.bottom - windowHeight + 5; // 5px for margin
+              const currentRelativeTop =
+                finalRect.top - hoveredLi.getBoundingClientRect().top;
+              currentSubmenu.style.top = `${currentRelativeTop - overflow}px`;
+            }
+          }
+        });
+
+        contextMenu.addEventListener("mouseleave", () => {
+          // When the mouse leaves the entire menu, hide all submenus.
+          const allSubmenus = contextMenu.querySelectorAll(".submenu");
+          allSubmenus.forEach((sm) => {
+            sm.style.display = "none";
+          });
+        });
+      }
+
+      // --- Form Logic ---
+      // Populate Color Dropdown
+      const colorSelect = document.getElementById("colorSelect");
+      for (let i = 68; i <= 90; i++) {
+        // ASCII D to Z
+        const letter = String.fromCharCode(i);
+        const opt = document.createElement("option");
+        opt.value = letter;
+        opt.textContent = letter;
+        colorSelect.appendChild(opt);
+      }
+
+      function updateMeasurements() {
+        const max = parseFloat(document.getElementById("measMax").value);
+        const min = parseFloat(document.getElementById("measMin").value);
+        const height = parseFloat(document.getElementById("measHeight").value);
+        const avgInput = document.getElementById("measAvg");
+        const depthInput = document.getElementById("propDepth");
+        const tableInput = document.getElementById("propTable");
+        const crownHInput = document.getElementById("propCrownH");
+        const crownAInput = document.getElementById("propCrownA");
+
+        if (!isNaN(max) && !isNaN(min)) {
+          const avg = (max + min) / 2;
+          avgInput.value = avg.toFixed(2);
+
+          if (!isNaN(height) && avg > 0) {
+            depthInput.value = ((height / avg) * 100).toFixed(1);
+          }
+
+          // Auto-calculate Crown Angle: tan(angle) = CrownHeight% / ((100% - Table%) / 2)
+          const ch = parseFloat(crownHInput.value);
+          const table = parseFloat(tableInput.value);
+          if (!isNaN(ch) && !isNaN(table) && table < 100) {
+            const angleRad = Math.atan(ch / ((100 - table) / 2));
+            crownAInput.value = (angleRad * (180 / Math.PI)).toFixed(1);
+          }
+        } else {
+          avgInput.value = "";
+        }
+      }
+
+      function updateProportions(changedField) {
+        const depth =
+          parseFloat(document.getElementById("propDepth").value) || 0;
+        const pav =
+          parseFloat(document.getElementById("propPavilion").value) || 0;
+        const girdle =
+          parseFloat(document.getElementById("propGirdle").value) || 0;
+        const crown =
+          parseFloat(document.getElementById("propCrownH").value) || 0;
+
+        if (changedField === "depth") {
+          // If total depth changes, adjust pavilion to match (Depth = Pav + Girdle + Crown)
+          document.getElementById("propPavilion").value = (
+            depth -
+            girdle -
+            crown
+          ).toFixed(1);
+        } else if (changedField === "pavilion") {
+          // If pavilion changes, adjust total depth
+          document.getElementById("propDepth").value = (
+            pav +
+            girdle +
+            crown
+          ).toFixed(1);
+        } else if (changedField === "girdle") {
+          // If girdle changes, adjust crown to keep depth/pavilion stable
+          document.getElementById("propCrownH").value = (
+            depth -
+            pav -
+            girdle
+          ).toFixed(1);
+        } else if (changedField === "crown") {
+          // If crown changes, adjust girdle to keep depth/pavilion stable
+          document.getElementById("propGirdle").value = (
+            depth -
+            pav -
+            crown
+          ).toFixed(1);
         }
 
-        function updateAllOutputs() {
-            updateInclusionsOutput();
-            updateBlemishesOutput();
-            updateClarityGrade();
+        // Trigger crown angle calculation
+        updateMeasurements();
+      }
+
+      // Add listeners to trigger crown angle calculation when inputs change
+      document
+        .getElementById("propTable")
+        .addEventListener("input", updateMeasurements);
+      document
+        .getElementById("propCrownH")
+        .addEventListener("input", updateMeasurements);
+
+      // Clarity Calculation Logic
+      const claritySelect = document.getElementById("clarity");
+
+      // Ranking from lightest to deepest impact
+      const clarityRankings = {
+        pinpoint: 1,
+        group_pinpoints: 2,
+        needle: 3,
+        linear_cloud: 4,
+        cloud: 5,
+        twinning_wisp: 6,
+        crystal: 7,
+        dark_crystal: 8,
+        bearded_girdle: 9,
+        indented_natural: 10,
+        etch_channel: 11,
+        feather: 12,
+        laser_drill: 13,
+        knot: 14,
+        chip: 15,
+        percussion_mark: 16,
+        cavity: 17,
+      };
+
+      function updateClarityGrade() {
+        const redInclusions = inclusions.filter((inc) => inc.color !== "green");
+        const greenBlemishes = inclusions.filter(
+          (inc) => inc.color === "green",
+        );
+
+        // 1. Base Grade Logic
+        if (redInclusions.length === 0) {
+          // No inclusions: FL if no blemishes, IF if blemishes exist
+          claritySelect.value = greenBlemishes.length === 0 ? "FL" : "IF";
+          return;
         }
 
-        function updateInclusionsOutput() {
-            const output = document.getElementById('inclusionsOutput');
-            if (!output) return;
+        let maxScore = 0;
+        let totalScore = 0;
 
-            const redInclusions = inclusions.filter(inc => inc.color !== 'green');
+        redInclusions.forEach((inc) => {
+          // A. Type Impact
+          const typeScore = clarityRankings[inc.type] || 5;
 
-            const text = redInclusions.map(getInclusionLocationString).filter(s => s !== null).join(', ');
+          // B. Size Impact (1px to 144px+)
+          // Base width is 40. Scale 1 = 40px.
+          const sizePx = 40 * inc.scale;
+          let sizeMult = 1;
+          if (sizePx < 5)
+            sizeMult = 0.2; // Tiny
+          else if (sizePx < 20)
+            sizeMult = 0.5; // Small
+          else if (sizePx < 50)
+            sizeMult = 1.0; // Medium
+          else if (sizePx < 100)
+            sizeMult = 2.0; // Large
+          else sizeMult = 4.0; // Very Large
 
-            output.textContent = text || "No inclusions yet";
+          // C. Location Impact
+          const isCrown = inc.x < 400;
+          // Centers calibrated to canvas/SVG alignment
+          const centerX = isCrown ? 185 : 616;
+          const centerY = 240;
+          const dx = inc.x - centerX;
+          const dy = inc.y - centerY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const radius = 151;
+
+          let locMult = 1.0;
+          if (isCrown) {
+            const ratio = dist / radius;
+            if (ratio <= 0.54) {
+              // Table (Sacred Area)
+              locMult = 3.0;
+            } else if (ratio <= 0.77) {
+              // Inner Bezel
+              locMult = 2.0;
+            } else {
+              // Outer Bezel
+              locMult = 1.2;
+            }
+          } else {
+            // Pavilion
+            locMult = 1.0;
+          }
+
+          // D. Color Impact
+          let colorMult = 1.0;
+          if (inc.type === "dark_crystal") colorMult = 1.5;
+
+          const score = typeScore * sizeMult * locMult * colorMult;
+
+          if (score > maxScore) maxScore = score;
+          totalScore += score;
+        });
+
+        // Aggregation: Worst inclusion + 50% of others
+        const finalScore = maxScore + (totalScore - maxScore) * 0.5;
+
+        // Map Score to Grade
+        let grade = "I3";
+        if (finalScore < 4) grade = "VVS1";
+        else if (finalScore < 5) grade = "VVS2";
+        else if (finalScore < 8) grade = "VS1";
+        else if (finalScore < 18) grade = "VS2";
+        else if (finalScore < 35) grade = "SI1";
+        else if (finalScore < 60) grade = "SI2";
+        else if (finalScore < 100) grade = "I1";
+        else if (finalScore < 200) grade = "I2";
+
+        claritySelect.value = grade;
+      }
+      // --- Symmetry Variations Logic ---
+      const symList = document.getElementById("symmetryOutput");
+      const predefinedSymTags = document.querySelectorAll(".predefined-tag");
+
+      predefinedSymTags.forEach((predefinedTag) => {
+        predefinedTag.addEventListener("click", () => {
+          const val = predefinedTag.textContent;
+
+          // Check if it's already added to prevent duplicates
+          const existingTags = Array.from(symList.querySelectorAll(".tag"));
+          const alreadyExists = existingTags.some((t) => t.textContent === val);
+
+          if (!alreadyExists) {
+            const tag = document.createElement("span");
+            tag.className = "tag";
+            tag.textContent = val;
+            tag.onclick = () => tag.remove(); // Click to remove
+            symList.appendChild(tag);
+          }
+        });
+      });
+
+      function getInclusionLocationString(inc) {
+        // 1. Determine View (Crown vs Pavilion)
+        const isCrown = inc.x < 400;
+        // 200 is the X-coordinate center of the Crown view, 600 is the X-coordinate center of the Pavilion view
+        const centerX = isCrown ? 185 : 616;
+        const centerY = 240;
+
+        // 2. Calculate Vector from Center
+        // Invert X for Pavilion to fix 3/9 o'clock orientation
+        const dx = isCrown ? inc.x - centerX : centerX - inc.x;
+        const dy = inc.y - centerY;
+
+        // 3. Calculate Clock Position
+        // atan2 returns angle from X-axis (3 o'clock). Y is down.
+        let angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
+        // Adjust so 12 o'clock is 0 (or 360)
+        let clockAngle = angleDeg + 90;
+        if (clockAngle < 0) clockAngle += 360;
+
+        let clock = Math.round(clockAngle / 30);
+        if (clock === 0) clock = 12;
+
+        // 4. Determine Table vs Bezel (Crown only)
+        // Diamond Radius = (160 * 1.8) / 2 = 144
+        // Table is 54% of radius
+        const radius = 151;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Ignore inclusions outside the diamond perimeter
+        if (dist > radius) return null;
+
+        const tableRadius = radius * 0.54;
+
+        let locationStr = isCrown
+          ? dist <= tableRadius
+            ? "Table"
+            : "Bezel"
+          : "Pavilion";
+
+        // Format: feather Table@6
+        return `${inc.type.replace(/_/g, " ")} ${locationStr}@${clock}`;
+      }
+
+      function updateBlemishesOutput() {
+        const output = document.getElementById("blemishesOutput");
+        if (!output) return;
+
+        const greenBlemishes = inclusions.filter(
+          (inc) => inc.color === "green",
+        );
+
+        if (greenBlemishes.length === 0) {
+          output.innerHTML = `<span style="color:#777; font-style:italic;">No blemishes yet</span>`;
+          return;
         }
 
-        // --- 1. Drawing The Diamond Template (from SVG) ---
-        let diamondTemplateImage = null;
-        const svgTemplateData = `
+        const text = greenBlemishes
+          .map(getInclusionLocationString)
+          .filter((s) => s !== null)
+          .join(", ");
+        output.textContent = text;
+      }
+
+      function updateAllOutputs() {
+        updateInclusionsOutput();
+        updateBlemishesOutput();
+        updateClarityGrade();
+      }
+
+      function updateInclusionsOutput() {
+        const output = document.getElementById("inclusionsOutput");
+        if (!output) return;
+
+        const redInclusions = inclusions.filter((inc) => inc.color !== "green");
+
+        const text = redInclusions
+          .map(getInclusionLocationString)
+          .filter((s) => s !== null)
+          .join(", ");
+
+        output.textContent = text || "No inclusions yet";
+      }
+
+      // --- 1. Drawing The Diamond Template (from SVG) ---
+      let diamondTemplateImage = null;
+      const svgTemplateData = `
     <svg xmlns="http://www.w3.org/2000/svg" width="367" height="168">
         <g fill="none" stroke="#aaa" stroke-width="0.75">
             <path d="m 83.58 10.23 a 75.321 73.978 0 0 1 0 147.946 a 75.321 73.978 0 0 1 0 -147.946 z m -18.723 28.469 l -8.939 -21.679 m 47.665 22.278 l 8.536 -22.191 m 18.303 47.331 l 21.893 -7.898 m -22.495 46.109 l 22.414 9.267 m -48.915 16.741 l 8.741 23.268 m -48.025 -23.166 l -9.63 22.533 m -16.831 -48.395 l -22.446 8.953 m 22.852 -46.646 l -22.232 -9.442 z m -7.334 69.848 l 6.805 -32.337 l 6.991 -18.296 l 11.636 -28.282 l 8.788 -17.425 l 19.398 -27.658 l 19.938 28.72 l 19.523 43.77 l 6.457 19.186 l 6.407 33.059 l -33.493 -6.825 l -19.901 -5.808 l -26.688 -11.073 l -18.829 -9.152 l -27.452 -19.037 l 27.271 -18.503 l 18.652 -9.503 l 28.66 -11.252 l 18.64 -5.452 l 32.221 -7.187 l -5.308 33.591 l -6.636 18.311 l -11.458 27.58 l -8.61 17.605 l -19.571 27.286 l -20.118 -27.461 l -8.252 -17.252 l -11.278 -26.886 l -6.456 -19.007 l -5.855 -33.389 l 33.294 6.103 l 20.625 6.161 l 25.611 11.073 l 18.646 8.621 l 27.443 19.034 l -27.438 19.386 l -18.475 8.801 l -27.754 11.247 l -19.184 6.159 l -34.405 6.824 m 0.992 0.201 z"/>
@@ -1218,981 +1525,1227 @@
     </svg>
     `;
 
-        function loadAndDrawTemplate() {
-            const img = new Image();
-            const svgBlob = new Blob([svgTemplateData], { type: 'image/svg+xml;charset=utf-8' });
-            const url = URL.createObjectURL(svgBlob);
+      function loadAndDrawTemplate() {
+        const img = new Image();
+        const svgBlob = new Blob([svgTemplateData], {
+          type: "image/svg+xml;charset=utf-8",
+        });
+        const url = URL.createObjectURL(svgBlob);
 
-            img.onload = function () {
-                diamondTemplateImage = img;
-                URL.revokeObjectURL(url);
-                render(); // Re-render now that the image is loaded
-            }
-            img.src = url;
+        img.onload = function () {
+          diamondTemplateImage = img;
+          URL.revokeObjectURL(url);
+          render(); // Re-render now that the image is loaded
+        };
+        img.src = url;
+      }
+
+      function drawDiamondTemplate() {
+        if (diamondTemplateImage) {
+          const imgWidth = diamondTemplateImage.width;
+          const imgHeight = diamondTemplateImage.height;
+
+          // The SVG contains two views side-by-side, so we split the width by 2
+          const singleViewWidth = imgWidth / 2;
+          const singleViewHeight = imgHeight;
+
+          const scale = 2;
+          const destWidth = singleViewWidth * scale;
+          const destHeight = singleViewHeight * scale;
+
+          // Rotation Angle (22.5 degrees clockwise)
+          const angleRad = (22.5 * Math.PI) / 180;
+
+          // Draw Crown View (Left half of SVG) -> Centered at 200, 300
+          const crownX = 200;
+          const crownY = 240;
+          // Logic center (185, 240) is the pivot point for geometric accuracy
+          const crownLogicX = 185; 
+
+          ctx.save();
+          ctx.translate(crownLogicX, crownY);
+          ctx.rotate(angleRad);
+          ctx.translate(-crownLogicX, -crownY);
+
+          ctx.drawImage(
+            diamondTemplateImage,
+            0,
+            0,
+            singleViewWidth,
+            singleViewHeight, // Source rect (Left half)
+            crownX - destWidth / 2,
+            crownY - destHeight / 2,
+            destWidth,
+            destHeight, // Dest rect
+          );
+          ctx.restore();
+
+          ctx.fillStyle = "#333";
+          ctx.font = "20px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText("Crown View", crownX - 16, crownY + destHeight / 2 + 30);
+
+          // Draw Pavilion View (Right half of SVG) -> Centered at 600, 300
+          const pavX = 600;
+          const pavY = 240;
+          // Logic center (616, 240)
+          const pavLogicX = 616;
+
+          ctx.save();
+          ctx.translate(pavLogicX, pavY);
+          ctx.rotate(angleRad);
+          ctx.translate(-pavLogicX, -pavY);
+
+          ctx.drawImage(
+            diamondTemplateImage,
+            singleViewWidth,
+            0,
+            singleViewWidth,
+            singleViewHeight, // Source rect (Right half)
+            pavX - destWidth / 2,
+            pavY - destHeight / 2,
+            destWidth,
+            destHeight, // Dest rect
+          );
+          ctx.restore();
+
+          ctx.fillText("Pavilion View", pavX + 16, pavY + destHeight / 2 + 30);
+          ctx.textAlign = "left"; // Reset for other text
+        }
+      }
+
+      // --- 2. Inclusion Class & Drawing ---
+      class Inclusion {
+        constructor(x, y, type, color = "red") {
+          this.x = x;
+          this.y = y;
+          this.type = type;
+          this.rotation = 0; // Degrees
+          this.color = color;
+          this.scale = 1;
+          this.width = 40; // Base size
+          this.height = 40;
+          this.id = Date.now() + Math.random();
         }
 
-        function drawDiamondTemplate() {
-            if (diamondTemplateImage) {
-                const imgWidth = diamondTemplateImage.width;
-                const imgHeight = diamondTemplateImage.height;
-                
-                // The SVG contains two views side-by-side, so we split the width by 2
-                const singleViewWidth = imgWidth / 2;
-                const singleViewHeight = imgHeight;
+        draw(ctx, isSelected) {
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate((this.rotation * Math.PI) / 180);
+          ctx.scale(this.scale, this.scale);
 
-                const scale = 2;
-                const destWidth = singleViewWidth * scale;
-                const destHeight = singleViewHeight * scale;
+          // Draw Symbol based on type
+          ctx.strokeStyle = this.color;
+          ctx.fillStyle = this.color;
+          ctx.lineWidth = 2 / this.scale;
 
-                // Draw Crown View (Left half of SVG) -> Centered at 200, 300
-                const crownX = 200;
-                const crownY = 240;
-                ctx.drawImage(
-                    diamondTemplateImage,
-                    0, 0, singleViewWidth, singleViewHeight, // Source rect (Left half)
-                    crownX - destWidth / 2 , crownY - destHeight / 2, destWidth, destHeight // Dest rect
-                );
-                ctx.fillStyle = "#333";
-                ctx.font = "20px Arial";
-                ctx.textAlign = "center";
-                ctx.fillText("Crown View", crownX - 16, crownY + destHeight / 2 + 20);
+          switch (this.type) {
+            case "crystal":
+              ctx.beginPath();
+              ctx.arc(0, 0, 15, 0, Math.PI * 2);
+              ctx.stroke();
+              break;
+            case "dark_crystal":
+              ctx.beginPath();
+              ctx.arc(0, 0, 12, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.save();
+              ctx.clip();
+              ctx.beginPath();
+              const hatchStep = 4 / this.scale;
+              for (let i = -20; i < 20; i += hatchStep) {
+                ctx.moveTo(i, -20);
+                ctx.lineTo(i, 20);
+              }
+              ctx.stroke();
+              ctx.restore();
+              break;
+            case "feather":
+              ctx.beginPath();
+              ctx.moveTo(-15, -15);
+              ctx.bezierCurveTo(-1, -10, 15, 5, 20, 20);
+              ctx.moveTo(-15, -15);
+              ctx.lineTo(-10, -10);
+              ctx.moveTo(-5, -5);
+              ctx.lineTo(0, 0);
+              ctx.moveTo(5, 5);
+              ctx.lineTo(10, 10);
+              ctx.moveTo(15, 15);
+              ctx.lineTo(20, 20);
+              ctx.stroke();
+              break;
+            case "cloud":
+              ctx.setLineDash([2, 2]);
+              ctx.beginPath();
+              ctx.arc(0, 0, 15, 0, Math.PI * 2);
+              ctx.stroke();
+              break;
+            case "linear_cloud":
+              ctx.setLineDash([2, 2]);
+              ctx.beginPath();
+              ctx.ellipse(0, 0, 20, 1.5, 0, 0, Math.PI * 2);
+              ctx.stroke();
+              break;
+            case "pinpoint":
+              ctx.beginPath();
+              ctx.arc(0, 0, 1, 0, Math.PI * 2);
+              ctx.fill();
+              break;
+            case "group_pinpoints":
+              ctx.beginPath();
+              ctx.arc(-6, -6, 2, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.arc(6, 6, 2, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.arc(6, -6, 2, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.arc(-6, 6, 2, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.arc(0, 0, 2, 0, Math.PI * 2);
+              ctx.fill();
+              break;
+            case "needle":
+              ctx.beginPath();
+              ctx.moveTo(-20, 0);
+              ctx.lineTo(20, 0);
+              ctx.stroke();
+              break;
+            case "knot":
+              ctx.beginPath();
+              ctx.rect(-10, -10, 20, 20);
+              ctx.stroke();
+              break;
+            case "cavity":
+              ctx.strokeStyle = "green";
+              ctx.beginPath();
+              ctx.arc(0, 0, 12, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.clip();
+              ctx.strokeStyle = "red";
+              ctx.beginPath();
+              const step = 7 / this.scale; // Adjust spacing based on scale
+              for (let i = -30; i < 30; i += step) {
+                ctx.moveTo(i, -30);
+                ctx.lineTo(i, 30);
+              }
+              ctx.stroke();
+              break;
+            case "chip":
+              ctx.beginPath();
+              ctx.moveTo(-15, -15);
+              ctx.lineTo(0, 0);
+              ctx.lineTo(15, -15);
+              ctx.stroke();
+              break;
+            case "laser_drill":
+              ctx.strokeStyle = "green";
+              ctx.beginPath();
+              ctx.arc(0, 0, 7, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(0, 0, 3, 0, Math.PI * 2);
+              ctx.fill();
+              break;
+            case "bearded_girdle":
+              ctx.beginPath();
+              ctx.setLineDash([1, 5]);
+              ctx.lineWidth = 9 / this.scale;
+              ctx.moveTo(-20, 0);
+              ctx.quadraticCurveTo(0, 7, 20, 0);
+              ctx.stroke();
+              break;
+            case "indented_natural":
+              ctx.strokeStyle = "red";
+              ctx.beginPath();
+              ctx.moveTo(-15, -5);
+              ctx.lineTo(-15, 10);
+              ctx.lineTo(15, -5);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.strokeStyle = "green";
+              ctx.moveTo(-14, -5);
+              ctx.lineTo(-14, 8);
+              ctx.lineTo(15, -6);
+              ctx.stroke();
+              break;
+            case "percussion_mark":
+              ctx.beginPath();
+              ctx.moveTo(-7, -7);
+              ctx.lineTo(7, 7);
+              ctx.moveTo(7, -7);
+              ctx.lineTo(-7, 7);
+              ctx.stroke();
+              break;
+            case "etch_channel":
+              ctx.strokeStyle = "red";
+              ctx.beginPath();
+              ctx.rect(-5, -5, 10, 10);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.strokeStyle = "green";
+              ctx.arc(0, 0, 3, 0, Math.PI * 2);
+              ctx.stroke();
+              break;
+            case "twinning_wisp":
+              ctx.beginPath();
+              ctx.setLineDash([1, 3]);
+              ctx.moveTo(-20, 0);
+              ctx.bezierCurveTo(-10, -10, 10, 10, 20, 0);
+              ctx.stroke();
+              break;
+            case "extra_facet":
+              ctx.beginPath();
+              ctx.moveTo(14, 8);
+              ctx.lineTo(14, -11);
+              ctx.lineTo(-15, 8);
+              ctx.stroke();
 
-                // Draw Pavilion View (Right half of SVG) -> Centered at 600, 300
-                const pavX = 600;
-                const pavY = 240;
-                ctx.drawImage(
-                    diamondTemplateImage,
-                    singleViewWidth, 0, singleViewWidth, singleViewHeight, // Source rect (Right half)
-                    pavX - destWidth / 2, pavY - destHeight / 2, destWidth, destHeight // Dest rect
-                );
-                ctx.fillText("Pavilion View", pavX + 16, pavY + destHeight / 2 + 20);
-                ctx.textAlign = "left"; // Reset for other text
-            }
+              ctx.beginPath();
+              ctx.moveTo(4.64, 0);
+              ctx.lineTo(-1.12, 0);
+              ctx.lineTo(-1.12, 5.76);
+              ctx.lineTo(4.64, 5.76);
+              ctx.moveTo(-1.12, 2.88);
+              ctx.lineTo(3.2, 2.88);
+              ctx.stroke();
+
+              ctx.beginPath();
+              ctx.moveTo(11.84, 0);
+              ctx.lineTo(6.08, 0);
+              ctx.lineTo(6.08, 5.76);
+              ctx.moveTo(6.08, 2.88);
+              ctx.lineTo(10.4, 2.88);
+              ctx.stroke();
+              break;
+            case "natural":
+              ctx.beginPath();
+              ctx.moveTo(14, 8);
+              ctx.lineTo(14, -11);
+              ctx.lineTo(-15, 8);
+              ctx.stroke();
+
+              ctx.beginPath();
+              ctx.moveTo(1.88, 5.76);
+              ctx.lineTo(1.88, 0);
+              ctx.lineTo(7.64, 5.76);
+              ctx.lineTo(7.64, 0);
+              ctx.stroke();
+              break;
+            case "nick":
+              ctx.beginPath();
+              ctx.moveTo(-5, 5);
+              ctx.lineTo(0, -5);
+              ctx.lineTo(5, 5);
+              ctx.stroke();
+              break;
+            case "abrasion":
+              ctx.lineWidth = 1.5 / this.scale;
+              ctx.beginPath();
+              ctx.moveTo(-10, -5);
+              ctx.lineTo(0, -3);
+              ctx.moveTo(-7, 0);
+              ctx.lineTo(3, 2);
+              ctx.moveTo(-10, 5);
+              ctx.lineTo(0, 7);
+              ctx.stroke();
+              break;
+            case "scratch":
+              ctx.beginPath();
+              ctx.moveTo(-15, 0);
+              ctx.quadraticCurveTo(-5, -10, 5, 0);
+              ctx.quadraticCurveTo(15, 10, 20, 0);
+              ctx.stroke();
+              break;
+            case "burn_mark":
+              ctx.setLineDash([1, 3]);
+              ctx.beginPath();
+              ctx.arc(0, 0, 10, 0, Math.PI * 2);
+              ctx.stroke();
+              break;
+            case "polish_lines":
+              ctx.lineWidth = 1 / this.scale;
+              ctx.beginPath();
+              ctx.moveTo(-15, -5);
+              ctx.lineTo(15, -5);
+              ctx.moveTo(-15, 0);
+              ctx.lineTo(15, 0);
+              ctx.moveTo(-15, 5);
+              ctx.lineTo(15, 5);
+              ctx.stroke();
+              break;
+          }
+
+          // Draw Selection Box (Local Space)
+          if (isSelected) {
+            ctx.strokeStyle = "#3498db";
+            ctx.lineWidth = 2 / this.scale;
+            ctx.setLineDash([5, 3]);
+            ctx.strokeRect(
+              -this.width / 2 - 5,
+              -this.height / 2 - 5,
+              this.width + 10,
+              this.height + 10,
+            );
+          }
+
+          ctx.restore();
+
+          // Draw Handles (World Space)
+          // Hide handles on touch devices to avoid clutter; use pinch/rotate gestures instead
+          if (isSelected && !window.matchMedia("(pointer: coarse)").matches) {
+            this.drawHandles(ctx);
+          }
         }
 
-        // --- 2. Inclusion Class & Drawing ---
-        class Inclusion {
-            constructor(x, y, type, color = 'red') {
-                this.x = x;
-                this.y = y;
-                this.type = type;
-                this.rotation = 0; // Degrees
-                this.color = color;
-                this.scale = 1;
-                this.width = 40; // Base size
-                this.height = 40;
-                this.id = Date.now() + Math.random();
-            }
+        drawHandles(ctx) {
+          const coords = this.getHandleCoords();
 
-            draw(ctx, isSelected) {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation * Math.PI / 180);
-                ctx.scale(this.scale, this.scale);
+          ctx.fillStyle = "#3498db";
+          ctx.strokeStyle = "white";
+          ctx.lineWidth = 2;
 
-                // Draw Symbol based on type
-                ctx.strokeStyle = this.color;
-                ctx.fillStyle = this.color;
-                ctx.lineWidth = 2 / this.scale;
-
-                switch (this.type) {
-                    case 'crystal':
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 15, 0, Math.PI * 2);
-                        ctx.stroke();
-                        break;
-                    case 'dark_crystal':
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 12, 0, Math.PI * 2);
-                        ctx.stroke();
-                        ctx.save();
-                        ctx.clip();
-                        ctx.beginPath();
-                        const hatchStep = 4 / this.scale;
-                        for (let i = -20; i < 20; i += hatchStep) {
-                            ctx.moveTo(i, -20);
-                            ctx.lineTo(i, 20);
-                        }
-                        ctx.stroke();
-                        ctx.restore();
-                        break;
-                    case 'feather':
-                        ctx.beginPath();
-                        ctx.moveTo(-15, -15);
-                        ctx.bezierCurveTo(-1, -10, 15, 5, 20, 20);
-                        ctx.moveTo(-15, -15);
-                        ctx.lineTo(-10, -10);
-                        ctx.moveTo(-5, -5);
-                        ctx.lineTo(0, 0);
-                        ctx.moveTo(5, 5);
-                        ctx.lineTo(10, 10);
-                        ctx.moveTo(15, 15);
-                        ctx.lineTo(20, 20);
-                        ctx.stroke();
-                        break;
-                    case 'cloud':
-                        ctx.setLineDash([2, 2]);
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 15, 0, Math.PI * 2);
-                        ctx.stroke();
-                        break;
-                    case 'linear_cloud':
-                        ctx.setLineDash([2, 2]);
-                        ctx.beginPath();
-                        ctx.ellipse(0, 0, 20, 1.5, 0, 0, Math.PI * 2);
-                        ctx.stroke();
-                        break;
-                    case 'pinpoint':
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 1, 0, Math.PI * 2);
-                        ctx.fill();
-                        break;
-                    case 'group_pinpoints':
-                        ctx.beginPath(); ctx.arc(-6, -6, 2, 0, Math.PI * 2); ctx.fill();
-                        ctx.beginPath(); ctx.arc(6, 6, 2, 0, Math.PI * 2); ctx.fill();
-                        ctx.beginPath(); ctx.arc(6, -6, 2, 0, Math.PI * 2); ctx.fill();
-                        ctx.beginPath(); ctx.arc(-6, 6, 2, 0, Math.PI * 2); ctx.fill();
-                        ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
-                        break;
-                    case 'needle':
-                        ctx.beginPath();
-                        ctx.moveTo(-20, 0);
-                        ctx.lineTo(20, 0);
-                        ctx.stroke();
-                        break;
-                    case 'knot':
-                        ctx.beginPath();
-                        ctx.rect(-10, -10, 20, 20);
-                        ctx.stroke();
-                        break;
-                    case 'cavity':
-                        ctx.strokeStyle = 'green';
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 12, 0, Math.PI * 2);
-                        ctx.stroke();
-                        ctx.clip();
-                        ctx.strokeStyle = 'red';
-                        ctx.beginPath();
-                        const step = 7 / this.scale; // Adjust spacing based on scale
-                        for (let i = -30; i < 30; i += step) {
-                            ctx.moveTo(i, -30);
-                            ctx.lineTo(i, 30);
-                        }
-                        ctx.stroke();
-                        break;
-                    case 'chip':
-                        ctx.beginPath();
-                        ctx.moveTo(-15, -15);
-                        ctx.lineTo(0, 0);
-                        ctx.lineTo(15, -15);
-                        ctx.stroke();
-                        break;
-                    case 'laser_drill':
-                        ctx.strokeStyle = 'green';
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 7, 0, Math.PI * 2);
-                        ctx.stroke();
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 3, 0, Math.PI * 2);
-                        ctx.fill();
-                        break;
-                    case 'bearded_girdle':
-                        ctx.beginPath();
-                        ctx.setLineDash([1, 5]);
-                        ctx.lineWidth = 9 / this.scale;
-                        ctx.moveTo(-20, 0);
-                        ctx.quadraticCurveTo(0, 7, 20, 0);
-                        ctx.stroke();
-                        break;
-                    case 'indented_natural':
-                        ctx.strokeStyle = 'red';
-                        ctx.beginPath();
-                        ctx.moveTo(-15, -5);
-                        ctx.lineTo(-15, 10);
-                        ctx.lineTo(15, -5);
-                        ctx.stroke();
-                        ctx.beginPath();
-                        ctx.strokeStyle = 'green';
-                        ctx.moveTo(-14, -5);
-                        ctx.lineTo(-14, 8);
-                        ctx.lineTo(15, -6);
-                        ctx.stroke();
-                        break;
-                    case 'percussion_mark':
-                        ctx.beginPath();
-                        ctx.moveTo(-7, -7); ctx.lineTo(7, 7);
-                        ctx.moveTo(7, -7); ctx.lineTo(-7, 7);
-                        ctx.stroke();
-                        break;
-                    case 'etch_channel':
-                        ctx.strokeStyle = 'red';
-                        ctx.beginPath();
-                        ctx.rect(-5, -5, 10, 10);
-                        ctx.stroke();
-                        ctx.beginPath();
-                        ctx.strokeStyle = 'green';
-                        ctx.arc(0, 0, 3, 0, Math.PI * 2);
-                        ctx.stroke();
-                        break;
-                    case 'twinning_wisp':
-                        ctx.beginPath();
-                        ctx.setLineDash([1,3]);
-                        ctx.moveTo(-20, 0);
-                        ctx.bezierCurveTo(-10, -10, 10, 10, 20, 0);
-                        ctx.stroke();
-                        break;
-                    case 'extra_facet':
-                        ctx.beginPath();
-                        ctx.moveTo(14, 8);
-                        ctx.lineTo(14, -11);
-                        ctx.lineTo(-15, 8);
-                        ctx.stroke();
-
-                        ctx.beginPath();
-                        ctx.moveTo(4.64, 0);
-                        ctx.lineTo(-1.12, 0);
-                        ctx.lineTo(-1.12, 5.76);
-                        ctx.lineTo(4.64, 5.76);
-                        ctx.moveTo(-1.12, 2.88);
-                        ctx.lineTo(3.2, 2.88);
-                        ctx.stroke();
-
-                        ctx.beginPath();
-                        ctx.moveTo(11.84, 0);
-                        ctx.lineTo(6.08, 0);
-                        ctx.lineTo(6.08, 5.76);
-                        ctx.moveTo(6.08, 2.88);
-                        ctx.lineTo(10.4, 2.88);
-                        ctx.stroke();
-                        break;
-                    case 'natural':
-                        ctx.beginPath();
-                        ctx.moveTo(14, 8);
-                        ctx.lineTo(14, -11);
-                        ctx.lineTo(-15, 8);
-                        ctx.stroke();
-
-                        ctx.beginPath();
-                        ctx.moveTo(1.88, 5.76);
-                        ctx.lineTo(1.88, 0);
-                        ctx.lineTo(7.64, 5.76);
-                        ctx.lineTo(7.64, 0);
-                        ctx.stroke();
-                        break;
-                    case 'nick':
-                        ctx.beginPath();
-                        ctx.moveTo(-5, 5);
-                        ctx.lineTo(0, -5);
-                        ctx.lineTo(5, 5);
-                        ctx.stroke();
-                        break;
-                    case 'abrasion':
-                        ctx.lineWidth = 1.5 / this.scale;
-                        ctx.beginPath();
-                        ctx.moveTo(-10, -5); ctx.lineTo(0, -3);
-                        ctx.moveTo(-7, 0); ctx.lineTo(3, 2);
-                        ctx.moveTo(-10, 5); ctx.lineTo(0, 7);
-                        ctx.stroke();
-                        break;
-                    case 'scratch':
-                        ctx.beginPath();
-                        ctx.moveTo(-15, 0);
-                        ctx.quadraticCurveTo(-5, -10, 5, 0);
-                        ctx.quadraticCurveTo(15, 10, 20, 0);
-                        ctx.stroke();
-                        break;
-                    case 'burn_mark':
-                        ctx.setLineDash([1, 3]);
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 10, 0, Math.PI * 2);
-                        ctx.stroke();
-                        break;
-                    case 'polish_lines':
-                        ctx.lineWidth = 1 / this.scale;
-                        ctx.beginPath();
-                        ctx.moveTo(-15, -5); ctx.lineTo(15, -5);
-                        ctx.moveTo(-15, 0); ctx.lineTo(15, 0);
-                        ctx.moveTo(-15, 5); ctx.lineTo(15, 5);
-                        ctx.stroke();
-                        break;
-                }
-
-                // Draw Selection Box (Local Space)
-                if (isSelected) {
-                    ctx.strokeStyle = '#3498db';
-                    ctx.lineWidth = 2 / this.scale;
-                    ctx.setLineDash([5, 3]);
-                    ctx.strokeRect(-this.width / 2 - 5, -this.height / 2 - 5, this.width + 10, this.height + 10);
-                }
-
-                ctx.restore();
-
-                // Draw Handles (World Space)
-                // Hide handles on touch devices to avoid clutter; use pinch/rotate gestures instead
-                if (isSelected && !window.matchMedia("(pointer: coarse)").matches) {
-                    this.drawHandles(ctx);
-                }
-            }
-
-            drawHandles(ctx) {
-                const coords = this.getHandleCoords();
-
-                ctx.fillStyle = '#3498db';
-                ctx.strokeStyle = 'white';
-                ctx.lineWidth = 2;
-
-                // Corners
-                ['tl', 'tr', 'br', 'bl'].forEach(pos => {
-                    const p = coords[pos];
-                    ctx.beginPath();
-                    ctx.rect(p.x - 5, p.y - 5, 10, 10);
-                    ctx.fill();
-                    ctx.stroke();
-                });
-
-                // Rotation Handle
-                const rot = coords.rot;
-                const top = coords.topMid;
-
-                ctx.beginPath();
-                ctx.moveTo(top.x, top.y);
-                ctx.lineTo(rot.x, rot.y);
-                ctx.strokeStyle = '#3498db';
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(rot.x, rot.y, 6, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-            }
-
-            getHandleCoords() {
-                const halfW = (this.width / 2 + 5) * this.scale;
-                const halfH = (this.height / 2 + 5) * this.scale;
-                const rad = this.rotation * Math.PI / 180;
-                const cos = Math.cos(rad);
-                const sin = Math.sin(rad);
-
-                const transform = (ox, oy) => ({
-                    x: ox * cos - oy * sin + this.x,
-                    y: ox * sin + oy * cos + this.y
-                });
-
-                return {
-                    tl: transform(-halfW, -halfH),
-                    tr: transform(halfW, -halfH),
-                    br: transform(halfW, halfH),
-                    bl: transform(-halfW, halfH),
-                    rot: transform(0, -halfH - 25),
-                    topMid: transform(0, -halfH)
-                };
-            }
-
-            getHitAction(mx, my) {
-                const coords = this.getHandleCoords();
-                const hitDist = 20; // Hit tolerance
-
-                // Prevent handle interactions on touch devices (unless using a mouse)
-                if (window.matchMedia("(pointer: coarse)").matches) {
-                    return Math.hypot(mx - this.x, my - this.y) < (this.width / 2) * this.scale + 10 ? 'move' : null;
-                }
-
-                // Check Rotation Handle
-                if (Math.hypot(mx - coords.rot.x, my - coords.rot.y) < hitDist) return 'rotate';
-
-                // Check Corners
-                if (Math.hypot(mx - coords.tl.x, my - coords.tl.y) < hitDist) return 'resize';
-                if (Math.hypot(mx - coords.tr.x, my - coords.tr.y) < hitDist) return 'resize';
-                if (Math.hypot(mx - coords.bl.x, my - coords.bl.y) < hitDist) return 'resize';
-                if (Math.hypot(mx - coords.br.x, my - coords.br.y) < hitDist) return 'resize';
-
-                // Check Body
-                const dist = Math.hypot(mx - this.x, my - this.y);
-                if (dist < (this.width / 2) * this.scale + 10) return 'move';
-
-                return null;
-            }
-
-            isHit(mx, my) {
-                return this.getHitAction(mx, my) !== null;
-            }
-        }
-
-        // --- Ghost Crosshair ---
-        function drawGhostCrosshair(inclusion) {
-            // The canvas is 800px wide. The views are centered at x=200 and x=600.
-            // The reflection point is the center of the canvas, x=400.
-            // A point at x on one side is (400 - x) away from the center line.
-            // The ghost will be at 400 + (400 - x) = 800 - x.
-            const ghostX = 800 - inclusion.x;
-            const ghostY = inclusion.y;
-            const size = 10; // size of the crosshair arms
-
-            ctx.save();
-            ctx.strokeStyle = 'rgba(150, 150, 150, 0.8)';
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([3, 3]);
-
-            // Draw crosshair
+          // Corners
+          ["tl", "tr", "br", "bl"].forEach((pos) => {
+            const p = coords[pos];
             ctx.beginPath();
-            ctx.moveTo(ghostX - size, ghostY);
-            ctx.lineTo(ghostX + size, ghostY);
-            ctx.moveTo(ghostX, ghostY - size);
-            ctx.lineTo(ghostX, ghostY + size);
+            ctx.rect(p.x - 5, p.y - 5, 10, 10);
+            ctx.fill();
             ctx.stroke();
+          });
 
-            ctx.restore();
+          // Rotation Handle
+          const rot = coords.rot;
+          const top = coords.topMid;
+
+          ctx.beginPath();
+          ctx.moveTo(top.x, top.y);
+          ctx.lineTo(rot.x, rot.y);
+          ctx.strokeStyle = "#3498db";
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(rot.x, rot.y, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
         }
 
-        // --- 3. Main Render Loop ---
-        function render() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        getHandleCoords() {
+          const halfW = (this.width / 2 + 5) * this.scale;
+          const halfH = (this.height / 2 + 5) * this.scale;
+          const rad = (this.rotation * Math.PI) / 180;
+          const cos = Math.cos(rad);
+          const sin = Math.sin(rad);
 
-            drawDiamondTemplate();
+          const transform = (ox, oy) => ({
+            x: ox * cos - oy * sin + this.x,
+            y: ox * sin + oy * cos + this.y,
+          });
 
-            // Draw ghost crosshair for selected or dragged inclusion
-            if (selectedInclusion) {
-                drawGhostCrosshair(selectedInclusion);
-            }
-
-            inclusions.forEach(inc => {
-                inc.draw(ctx, inc === selectedInclusion);
-            });
-
-            // Draw a "ghost" marker on the opposite view for the selected inclusion
-            if (selectedInclusion) {
-                drawGhostMarker(selectedInclusion);
-            }
+          return {
+            tl: transform(-halfW, -halfH),
+            tr: transform(halfW, -halfH),
+            br: transform(halfW, halfH),
+            bl: transform(-halfW, halfH),
+            rot: transform(0, -halfH - 25),
+            topMid: transform(0, -halfH),
+          };
         }
 
-        function drawGhostMarker(inclusion) {
-            const isCrown = inclusion.x < 400;
-            const crownCenterX = 185;
-            const pavilionCenterX = 616;
+        getHitAction(mx, my) {
+          const coords = this.getHandleCoords();
+          const hitDist = 20; // Hit tolerance
 
-            let ghostX, ghostY;
+          // Prevent handle interactions on touch devices (unless using a mouse)
+          if (window.matchMedia("(pointer: coarse)").matches) {
+            return Math.hypot(mx - this.x, my - this.y) <
+              (this.width / 2) * this.scale + 10
+              ? "move"
+              : null;
+          }
 
-            if (isCrown) {
-                // It's on the crown, calculate ghost position on pavilion
-                const dx = inclusion.x - crownCenterX;
-                ghostX = pavilionCenterX - dx;
-            } else {
-                // It's on the pavilion, calculate ghost position on crown
-                const dx = inclusion.x - pavilionCenterX;
-                ghostX = crownCenterX - dx;
-            }
-            ghostY = inclusion.y; // Y-coordinate remains the same
+          // Check Rotation Handle
+          if (Math.hypot(mx - coords.rot.x, my - coords.rot.y) < hitDist)
+            return "rotate";
 
-            // Draw the marker (a semi-transparent crosshair)
-            ctx.save();
-            ctx.strokeStyle = 'rgba(52, 152, 219, 0.7)'; // A semi-transparent blue
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([4, 4]);
-            
-            ctx.beginPath();
-            ctx.moveTo(ghostX - 15, ghostY);
-            ctx.lineTo(ghostX + 15, ghostY);
-            ctx.moveTo(ghostX, ghostY - 15);
-            ctx.lineTo(ghostX, ghostY + 15);
-            ctx.stroke();
-            
-            ctx.restore();
+          // Check Corners
+          if (Math.hypot(mx - coords.tl.x, my - coords.tl.y) < hitDist)
+            return "resize";
+          if (Math.hypot(mx - coords.tr.x, my - coords.tr.y) < hitDist)
+            return "resize";
+          if (Math.hypot(mx - coords.bl.x, my - coords.bl.y) < hitDist)
+            return "resize";
+          if (Math.hypot(mx - coords.br.x, my - coords.br.y) < hitDist)
+            return "resize";
+
+          // Check Body
+          const dist = Math.hypot(mx - this.x, my - this.y);
+          if (dist < (this.width / 2) * this.scale + 10) return "move";
+
+          return null;
         }
 
-        // --- 4. Event Listeners ---
+        isHit(mx, my) {
+          return this.getHitAction(mx, my) !== null;
+        }
+      }
 
-        function showContextMenu(x, y) {
-            contextMenu.style.left = `${x}px`;
-            contextMenu.style.top = `${y}px`;
-            contextMenu.style.display = 'block';
+      // --- Ghost Crosshair ---
+      function drawGhostCrosshair(inclusion) {
+        // The canvas is 800px wide. The views are centered at x=200 and x=600.
+        // The reflection point is the center of the canvas, x=400.
+        // A point at x on one side is (400 - x) away from the center line.
+        // The ghost will be at 400 + (400 - x) = 800 - x.
+        const ghostX = 800 - inclusion.x;
+        const ghostY = inclusion.y;
+        const size = 10; // size of the crosshair arms
 
-            const menuRect = contextMenu.getBoundingClientRect();
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
+        ctx.save();
+        ctx.strokeStyle = "rgba(150, 150, 150, 0.8)";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([3, 3]);
 
-            let newX = x;
-            let newY = y;
+        // Draw crosshair
+        ctx.beginPath();
+        ctx.moveTo(ghostX - size, ghostY);
+        ctx.lineTo(ghostX + size, ghostY);
+        ctx.moveTo(ghostX, ghostY - size);
+        ctx.lineTo(ghostX, ghostY + size);
+        ctx.stroke();
 
-            if (menuRect.right > windowWidth) {
-                newX = windowWidth - menuRect.width - 5; // 5px margin from edge
-            }
-            if (menuRect.bottom > windowHeight) {
-                newY = windowHeight - menuRect.height - 5; // 5px margin from edge
-            }
+        ctx.restore();
+      }
 
-            contextMenu.style.left = `${newX}px`;
-            contextMenu.style.top = `${newY}px`;
+      // --- 3. Main Render Loop ---
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        drawDiamondTemplate();
+
+        // Draw ghost crosshair for selected or dragged inclusion
+        if (selectedInclusion) {
+          drawGhostCrosshair(selectedInclusion);
         }
 
-        canvas.addEventListener('contextmenu', e => {
-            e.preventDefault();
-            if (dragAction) return; // Don't show if dragging
-
-            const { x, y } = getPointerPos(e);
-            contextMenuPos = { x, y };
-
-            showContextMenu(e.clientX, e.clientY);
-            deselectAll();
-            render();
+        inclusions.forEach((inc) => {
+          inc.draw(ctx, inc === selectedInclusion);
         });
 
-        window.addEventListener('click', (e) => {
-            if (!contextMenu.contains(e.target)) {
-                contextMenu.style.display = 'none';
-            }
-        });
+        // Draw a "ghost" marker on the opposite view for the selected inclusion
+        if (selectedInclusion) {
+          drawGhostMarker(selectedInclusion);
+        }
+      }
 
-        function addInclusion(x, y, type, color) {
-            const newInclusion = new Inclusion(x, y, type, color);
-            inclusions.push(newInclusion);
-            selectInclusion(newInclusion);
-            updateAllOutputs();
-            render();
+      function drawGhostMarker(inclusion) {
+        const isCrown = inclusion.x < 400;
+        const crownCenterX = 185;
+        const pavilionCenterX = 616;
+
+        let ghostX, ghostY;
+
+        if (isCrown) {
+          // It's on the crown, calculate ghost position on pavilion
+          const dx = inclusion.x - crownCenterX;
+          ghostX = pavilionCenterX - dx;
+        } else {
+          // It's on the pavilion, calculate ghost position on crown
+          const dx = inclusion.x - pavilionCenterX;
+          ghostX = crownCenterX - dx;
+        }
+        ghostY = inclusion.y; // Y-coordinate remains the same
+
+        // Draw the marker (a semi-transparent crosshair)
+        ctx.save();
+        ctx.strokeStyle = "rgba(52, 152, 219, 0.7)"; // A semi-transparent blue
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+
+        ctx.beginPath();
+        ctx.moveTo(ghostX - 15, ghostY);
+        ctx.lineTo(ghostX + 15, ghostY);
+        ctx.moveTo(ghostX, ghostY - 15);
+        ctx.lineTo(ghostX, ghostY + 15);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // --- 4. Event Listeners ---
+
+      function showContextMenu(x, y) {
+        contextMenu.style.left = `${x}px`;
+        contextMenu.style.top = `${y}px`;
+        contextMenu.style.display = "block";
+
+        const menuRect = contextMenu.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+
+        let newX = x;
+        let newY = y;
+
+        if (menuRect.right > windowWidth) {
+          newX = windowWidth - menuRect.width - 5; // 5px margin from edge
+        }
+        if (menuRect.bottom > windowHeight) {
+          newY = windowHeight - menuRect.height - 5; // 5px margin from edge
         }
 
-        // Helper for coordinates (handles CSS scaling)
-        function getPointerPos(e) {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
+        contextMenu.style.left = `${newX}px`;
+        contextMenu.style.top = `${newY}px`;
+      }
 
-            const clientX = (e.touches && e.touches.length) ? e.touches[0].clientX : e.clientX;
-            const clientY = (e.touches && e.touches.length) ? e.touches[0].clientY : e.clientY;
+      canvas.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        if (dragAction) return; // Don't show if dragging
 
-            return {
-                x: (clientX - rect.left) * scaleX,
-                y: (clientY - rect.top) * scaleY
-            };
+        const { x, y } = getPointerPos(e);
+        contextMenuPos = { x, y };
+
+        showContextMenu(e.clientX, e.clientY);
+        deselectAll();
+        render();
+      });
+
+      window.addEventListener("click", (e) => {
+        if (!contextMenu.contains(e.target)) {
+          contextMenu.style.display = "none";
+        }
+        if (e.target === document.getElementById("searchModal")) {
+          document.getElementById("searchModal").style.display = "none";
+        }
+      });
+
+      function addInclusion(x, y, type, color) {
+        const newInclusion = new Inclusion(x, y, type, color);
+        inclusions.push(newInclusion);
+        selectInclusion(newInclusion);
+        updateAllOutputs();
+        render();
+      }
+
+      // Helper for coordinates (handles CSS scaling)
+      function getPointerPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        const clientX =
+          e.touches && e.touches.length ? e.touches[0].clientX : e.clientX;
+        const clientY =
+          e.touches && e.touches.length ? e.touches[0].clientY : e.clientY;
+
+        return {
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY,
+        };
+      }
+
+      // Canvas Mouse Interaction (Select & Move)
+      function handlePointerDown(e) {
+        if (e.type === "touchstart") e.preventDefault(); // Prevent scroll
+
+        // Handle Pinch Start
+        if (e.touches && e.touches.length === 2) {
+          clearTimeout(longPressTimer);
+          dragAction = "pinch";
+          potentialDeselect = false;
+          const p1 = getPointerPos({ touches: [e.touches[0]] });
+          const p2 = getPointerPos({ touches: [e.touches[1]] });
+
+          initialPinchDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+          initialPinchAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+
+          if (selectedInclusion) {
+            dragStart.scale = selectedInclusion.scale;
+            dragStart.rotation = selectedInclusion.rotation;
+            dragStart.centerX = (p1.x + p2.x) / 2;
+            dragStart.centerY = (p1.y + p2.y) / 2;
+            dragStart.incX = selectedInclusion.x;
+            dragStart.incY = selectedInclusion.y;
+          }
+          return;
         }
 
-        // Canvas Mouse Interaction (Select & Move)
-        function handlePointerDown(e) {
-            if (e.type === 'touchstart') e.preventDefault(); // Prevent scroll
+        const { x: mx, y: my } = getPointerPos(e);
 
-            // Handle Pinch Start
-            if (e.touches && e.touches.length === 2) {
-                clearTimeout(longPressTimer);
-                dragAction = 'pinch';
-                potentialDeselect = false;
-                const p1 = getPointerPos({ touches: [e.touches[0]] });
-                const p2 = getPointerPos({ touches: [e.touches[1]] });
-
-                initialPinchDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-                initialPinchAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-
-                if (selectedInclusion) {
-                    dragStart.scale = selectedInclusion.scale;
-                    dragStart.rotation = selectedInclusion.rotation;
-                    dragStart.centerX = (p1.x + p2.x) / 2;
-                    dragStart.centerY = (p1.y + p2.y) / 2;
-                    dragStart.incX = selectedInclusion.x;
-                    dragStart.incY = selectedInclusion.y;
-                }
-                return;
-            }
-
-            const { x: mx, y: my } = getPointerPos(e);
-
-            // If we have a selected inclusion, check its handles first
-            if (selectedInclusion) {
-                const action = selectedInclusion.getHitAction(mx, my);
-                if (action) {
-                    clearTimeout(longPressTimer);
-                    dragAction = action;
-                    dragStart.x = mx;
-                    dragStart.y = my;
-                    dragStart.val = (action === 'rotate') ? selectedInclusion.rotation : selectedInclusion.scale;
-
-                    if (action === 'resize') {
-                        dragStart.dist = Math.hypot(mx - selectedInclusion.x, my - selectedInclusion.y);
-                    } else if (action === 'move') {
-                        dragStart.offsetX = mx - selectedInclusion.x;
-                        dragStart.offsetY = my - selectedInclusion.y;
-                    }
-                    potentialDeselect = false;
-                    render();
-                    return;
-                }
-            }
-
-            // Check hits on other items
-            for (let i = inclusions.length - 1; i >= 0; i--) {
-                if (inclusions[i].getHitAction(mx, my)) {
-                    clearTimeout(longPressTimer);
-                    selectInclusion(inclusions[i]);
-                    dragAction = 'move';
-                    dragStart.offsetX = mx - inclusions[i].x;
-                    dragStart.offsetY = my - inclusions[i].y;
-                    potentialDeselect = false;
-                    render();
-                    return;
-                }
-            }
-
-            // Hit nothing
-            if (e.type === 'mousedown') {
-                deselectAll();
-                render();
-            } else { // touchstart
-                potentialDeselect = true;
-                const touch = e.touches[0];
-                touchStartPos = { x: touch.clientX, y: touch.clientY };
-
-                longPressTimer = setTimeout(() => {
-                    // Long press successful
-                    contextMenuPos = { x: mx, y: my };
-                    showContextMenu(touchStartPos.x, touchStartPos.y);
-                    potentialDeselect = false; // It was a long press, not a tap-to-deselect
-                }, LONG_PRESS_DURATION);
-            }
-        }
-
-        function handlePointerMove(e) {
-            if (e.type === 'touchmove') {
-                e.preventDefault();
-                if (touchStartPos.x || touchStartPos.y) {
-                    const touch = e.touches[0];
-                    const dist = Math.hypot(touch.clientX - touchStartPos.x, touch.clientY - touchStartPos.y);
-                    if (dist > 10) { // If finger moves too much, cancel long press
-                        clearTimeout(longPressTimer);
-                    }
-                }
-            }
-            if (!dragAction || !selectedInclusion) return;
-
-            // Handle Pinch Move
-            if (dragAction === 'pinch' && e.touches && e.touches.length === 2) {
-                const p1 = getPointerPos({ touches: [e.touches[0]] });
-                const p2 = getPointerPos({ touches: [e.touches[1]] });
-
-                const currentDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-                const currentAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-
-                const currentCenterX = (p1.x + p2.x) / 2;
-                const currentCenterY = (p1.y + p2.y) / 2;
-
-                const scaleFactor = currentDist / initialPinchDist;
-                const angleDiff = (currentAngle - initialPinchAngle) * 180 / Math.PI;
-
-                selectedInclusion.scale = Math.max(0.1, dragStart.scale * scaleFactor);
-                selectedInclusion.rotation = dragStart.rotation + angleDiff;
-
-                selectedInclusion.x = dragStart.incX + (currentCenterX - dragStart.centerX);
-                selectedInclusion.y = dragStart.incY + (currentCenterY - dragStart.centerY);
-
-                updateAllOutputs();
-                render();
-                return;
-            }
-
-            const { x: mx, y: my } = getPointerPos(e);
-
-            if (dragAction === 'move') {
-                selectedInclusion.x = mx - dragStart.offsetX;
-                selectedInclusion.y = my - dragStart.offsetY;
-            } else if (dragAction === 'rotate') {
-                const angle = Math.atan2(my - selectedInclusion.y, mx - selectedInclusion.x);
-                const angleDeg = angle * 180 / Math.PI;
-                // Handle is at -90 degrees relative to center, so add 90
-                selectedInclusion.rotation = angleDeg + 90;
-            } else if (dragAction === 'resize') {
-                const currentDist = Math.hypot(mx - selectedInclusion.x, my - selectedInclusion.y);
-                const scaleFactor = currentDist / dragStart.dist;
-                selectedInclusion.scale = Math.max(0.1, dragStart.val * scaleFactor);
-            }
-
-            updateAllOutputs();
-            render();
-        }
-
-        function handlePointerUp(e) {
+        // If we have a selected inclusion, check its handles first
+        if (selectedInclusion) {
+          const action = selectedInclusion.getHitAction(mx, my);
+          if (action) {
             clearTimeout(longPressTimer);
-            touchStartPos = { x: 0, y: 0 }; // Reset
+            dragAction = action;
+            dragStart.x = mx;
+            dragStart.y = my;
+            dragStart.val =
+              action === "rotate"
+                ? selectedInclusion.rotation
+                : selectedInclusion.scale;
 
-            if (potentialDeselect) {
-                deselectAll();
-                render();
-                potentialDeselect = false;
+            if (action === "resize") {
+              dragStart.dist = Math.hypot(
+                mx - selectedInclusion.x,
+                my - selectedInclusion.y,
+              );
+            } else if (action === "move") {
+              dragStart.offsetX = mx - selectedInclusion.x;
+              dragStart.offsetY = my - selectedInclusion.y;
             }
-            dragAction = null;
-            
-        }
-
-        // Mouse Events
-        canvas.addEventListener('mousedown', handlePointerDown);
-        canvas.addEventListener('mousemove', handlePointerMove);
-        canvas.addEventListener('mouseup', handlePointerUp);
-        // Touch Events
-        canvas.addEventListener('touchstart', handlePointerDown, { passive: false });
-        canvas.addEventListener('touchmove', handlePointerMove, { passive: false });
-        canvas.addEventListener('touchend', handlePointerUp);
-
-        // Keyboard Events
-        window.addEventListener('keydown', (e) => {
-            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedInclusion) {
-                deleteSelected();
-            }
-        });
-
-        // Controls Logic
-        function selectInclusion(inc) {
-            selectedInclusion = inc;
-            deleteBtn.disabled = false;
-        }
-
-        function deselectAll() {
-            selectedInclusion = null;
-            deleteBtn.disabled = true;
-        }
-
-        function deleteSelected() {
-            if (selectedInclusion) {
-                inclusions = inclusions.filter(i => i !== selectedInclusion);
-                deselectAll();
-                updateAllOutputs();
-                render();
-            }
-        }
-
-        deleteBtn.addEventListener('click', () => {
-            deleteSelected();
-        });
-
-        clearBtn.addEventListener('click', () => {
-            if (confirm("Clear all inclusions?")) {
-                inclusions = [];
-                deselectAll();
-                updateAllOutputs();
-                render();
-            }
-        });
-
-        saveBtn.addEventListener('click', () => {
-            // Temporarily deselect to capture clean image
-            const previousSelection = selectedInclusion;
-            selectedInclusion = null;
+            potentialDeselect = false;
             render();
+            return;
+          }
+        }
 
-            // Create a temporary link to download the canvas as image
-            const link = document.createElement('a');
-            link.download = 'diamond-grading-report.png';
-            link.href = canvas.toDataURL();
-            link.click();
-
-            // Restore selection
-            selectedInclusion = previousSelection;
+        // Check hits on other items
+        for (let i = inclusions.length - 1; i >= 0; i--) {
+          if (inclusions[i].getHitAction(mx, my)) {
+            clearTimeout(longPressTimer);
+            selectInclusion(inclusions[i]);
+            dragAction = "move";
+            dragStart.offsetX = mx - inclusions[i].x;
+            dragStart.offsetY = my - inclusions[i].y;
+            potentialDeselect = false;
             render();
-        });
+            return;
+          }
+        }
 
-        // Initial Draw
-        populateContextMenu();
-        loadAndDrawTemplate();
+        // Hit nothing
+        if (e.type === "mousedown") {
+          deselectAll();
+          render();
+        } else {
+          // touchstart
+          potentialDeselect = true;
+          const touch = e.touches[0];
+          touchStartPos = { x: touch.clientX, y: touch.clientY };
 
-        // --- Modal Logic ---
-        function displayResults(data) {
-            const modal = document.getElementById('resultsModal');
-            const breakdownContainer = document.getElementById('resultsBreakdown');
-            const overallAccuracyContainer = document.getElementById('overallAccuracy');
-            
-            let tableHTML = `
-                <table>
+          longPressTimer = setTimeout(() => {
+            // Long press successful
+            contextMenuPos = { x: mx, y: my };
+            showContextMenu(touchStartPos.x, touchStartPos.y);
+            potentialDeselect = false; // It was a long press, not a tap-to-deselect
+          }, LONG_PRESS_DURATION);
+        }
+      }
+
+      function handlePointerMove(e) {
+        if (e.type === "touchmove") {
+          e.preventDefault();
+          if (touchStartPos.x || touchStartPos.y) {
+            const touch = e.touches[0];
+            const dist = Math.hypot(
+              touch.clientX - touchStartPos.x,
+              touch.clientY - touchStartPos.y,
+            );
+            if (dist > 10) {
+              // If finger moves too much, cancel long press
+              clearTimeout(longPressTimer);
+            }
+          }
+        }
+        if (!dragAction || !selectedInclusion) return;
+
+        // Handle Pinch Move
+        if (dragAction === "pinch" && e.touches && e.touches.length === 2) {
+          const p1 = getPointerPos({ touches: [e.touches[0]] });
+          const p2 = getPointerPos({ touches: [e.touches[1]] });
+
+          const currentDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+          const currentAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+
+          const currentCenterX = (p1.x + p2.x) / 2;
+          const currentCenterY = (p1.y + p2.y) / 2;
+
+          const scaleFactor = currentDist / initialPinchDist;
+          const angleDiff =
+            ((currentAngle - initialPinchAngle) * 180) / Math.PI;
+
+          selectedInclusion.scale = Math.max(
+            0.1,
+            dragStart.scale * scaleFactor,
+          );
+          selectedInclusion.rotation = dragStart.rotation + angleDiff;
+
+          selectedInclusion.x =
+            dragStart.incX + (currentCenterX - dragStart.centerX);
+          selectedInclusion.y =
+            dragStart.incY + (currentCenterY - dragStart.centerY);
+
+          updateAllOutputs();
+          render();
+          return;
+        }
+
+        const { x: mx, y: my } = getPointerPos(e);
+
+        if (dragAction === "move") {
+          selectedInclusion.x = mx - dragStart.offsetX;
+          selectedInclusion.y = my - dragStart.offsetY;
+        } else if (dragAction === "rotate") {
+          const angle = Math.atan2(
+            my - selectedInclusion.y,
+            mx - selectedInclusion.x,
+          );
+          const angleDeg = (angle * 180) / Math.PI;
+          // Handle is at -90 degrees relative to center, so add 90
+          selectedInclusion.rotation = angleDeg + 90;
+        } else if (dragAction === "resize") {
+          const currentDist = Math.hypot(
+            mx - selectedInclusion.x,
+            my - selectedInclusion.y,
+          );
+          const scaleFactor = currentDist / dragStart.dist;
+          selectedInclusion.scale = Math.max(0.1, dragStart.val * scaleFactor);
+        }
+
+        updateAllOutputs();
+        render();
+      }
+
+      function handlePointerUp(e) {
+        clearTimeout(longPressTimer);
+        touchStartPos = { x: 0, y: 0 }; // Reset
+
+        if (potentialDeselect) {
+          deselectAll();
+          render();
+          potentialDeselect = false;
+        }
+        dragAction = null;
+      }
+
+      // Mouse Events
+      canvas.addEventListener("mousedown", handlePointerDown);
+      canvas.addEventListener("mousemove", handlePointerMove);
+      canvas.addEventListener("mouseup", handlePointerUp);
+      // Touch Events
+      canvas.addEventListener("touchstart", handlePointerDown, {
+        passive: false,
+      });
+      canvas.addEventListener("touchmove", handlePointerMove, {
+        passive: false,
+      });
+      canvas.addEventListener("touchend", handlePointerUp);
+
+      // Keyboard Events
+      window.addEventListener("keydown", (e) => {
+        if (
+          (e.key === "Delete" || e.key === "Backspace") &&
+          selectedInclusion
+        ) {
+          deleteSelected();
+        }
+      });
+
+      // Controls Logic
+      function selectInclusion(inc) {
+        selectedInclusion = inc;
+        deleteBtn.disabled = false;
+      }
+
+      function deselectAll() {
+        selectedInclusion = null;
+        deleteBtn.disabled = true;
+      }
+
+      function deleteSelected() {
+        if (selectedInclusion) {
+          inclusions = inclusions.filter((i) => i !== selectedInclusion);
+          deselectAll();
+          updateAllOutputs();
+          render();
+        }
+      }
+
+      deleteBtn.addEventListener("click", () => {
+        deleteSelected();
+      });
+
+      clearBtn.addEventListener("click", () => {
+        if (confirm("Clear all inclusions?")) {
+          inclusions = [];
+          deselectAll();
+          updateAllOutputs();
+          render();
+        }
+      });
+
+      saveBtn.addEventListener("click", () => {
+        // Temporarily deselect to capture clean image
+        const previousSelection = selectedInclusion;
+        selectedInclusion = null;
+        render();
+
+        // Create a temporary link to download the canvas as image
+        const link = document.createElement("a");
+        link.download = "diamond-grading-report.png";
+        link.href = canvas.toDataURL();
+        link.click();
+
+        // Restore selection
+        selectedInclusion = previousSelection;
+        render();
+      });
+
+      // Initial Draw
+      populateContextMenu();
+      loadAndDrawTemplate();
+
+      // --- Search Logic ---
+      const searchBtn = document.getElementById("search-btn");
+      const searchNameInput = document.getElementById("searchName");
+      const searchStoneNumberInput =
+        document.getElementById("searchStoneNumber");
+      const loadedImageContainer = document.getElementById(
+        "loaded-image-container",
+      );
+      const loadedImage = document.getElementById("loaded-image");
+
+      function populateFormWithData(report) {
+        const idToReportKey = {
+          studentName: "studentName",
+          stoneNumber: "stoneNumber",
+          shapeCut: "shape",
+          caratWeight: "carat",
+          clarity: "clarity",
+          colorSelect: "color",
+          fluorescence: "fluorescence",
+          measMax: "measMax",
+          measMin: "measMin",
+          measAvg: "measAvg",
+          measHeight: "measHeight",
+          propDepth: "propDepth",
+          gradeDepth: "gradeDepth",
+          propTable: "propTable",
+          gradeTable: "gradeTable",
+          propPavilion: "propPavilion",
+          gradePavilion: "gradePavilion",
+          propGirdle: "propGirdle",
+          gradeGirdle: "gradeGirdle",
+          propCrownH: "propCrownH",
+          gradeCrownH: "gradeCrownH",
+          propCrownA: "propCrownA",
+          gradeCrownA: "gradeCrownA",
+          gradeFinalProp: "gradeFinalProp",
+          culetCondition: "culetCondition",
+          gradePolish: "gradePolish",
+          gradeSym: "gradeSym",
+        };
+
+        for (const [id, key] of Object.entries(idToReportKey)) {
+          const el = document.getElementById(id);
+          if (el && report[key] !== undefined) {
+            el.value = report[key];
+          }
+        }
+
+        // Repopulate symmetry tags
+        const symOutput = document.getElementById("symmetryOutput");
+        symOutput.innerHTML = ""; // Clear existing
+        if (report.symmetryVariations) {
+          try {
+            const variations = JSON.parse(report.symmetryVariations);
+            if (Array.isArray(variations)) {
+              variations.forEach((val) => {
+                const tag = document.createElement("span");
+                tag.className = "tag";
+                tag.textContent = val;
+                tag.onclick = () => tag.remove();
+                symOutput.appendChild(tag);
+              });
+            }
+          } catch (e) {
+            console.error("Failed to parse symmetry variations:", e);
+          }
+        }
+
+        // Repopulate canvas inclusions
+        if (report.inclusionsData) {
+          try {
+            const loadedInclusions = JSON.parse(report.inclusionsData);
+            // Re-instantiate as Inclusion objects to ensure methods are available
+            inclusions = loadedInclusions.map((incData) => {
+              const inc = new Inclusion(
+                incData.x,
+                incData.y,
+                incData.type,
+                incData.color,
+              );
+              inc.rotation = incData.rotation;
+              inc.scale = incData.scale;
+              inc.id = incData.id;
+              return inc;
+            });
+          } catch (e) {
+            console.error("Failed to parse inclusions data:", e);
+            inclusions = [];
+          }
+        } else {
+          inclusions = [];
+        }
+
+        updateAllOutputs();
+        render();
+
+        // Display the saved image
+        if (report.imageUrl) {
+          loadedImage.src = report.imageUrl;
+          loadedImageContainer.style.display = "block";
+        } else {
+          loadedImageContainer.style.display = "none";
+        }
+      }
+
+      searchBtn.addEventListener("click", () => {
+        const name = searchNameInput.value.trim();
+        const stoneNumber = searchStoneNumberInput.value.trim();
+
+        if (!name || !stoneNumber) {
+          alert("Please enter both a name and a stone number to search.");
+          return;
+        }
+
+        const originalText = searchBtn.textContent;
+        searchBtn.textContent = "Searching...";
+        searchBtn.disabled = true;
+        loadedImageContainer.style.display = "none";
+
+        // Changed to POST to avoid CORS issues and use the existing doPost in Apps Script
+        fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "search",
+            name: name,
+            stoneNumber: stoneNumber,
+          }),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(
+                `Network response was not ok: ${response.statusText}`,
+              );
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const modal = document.getElementById("resultsModal");
+            const body = document.getElementById("resultsBody");
+
+            if (data.success && data.breakdown) {
+              // Directly display the grading result (Result Page)
+              displayResults(data);
+              modal.style.display = "block";
+            } else {
+              body.innerHTML = `<div style="font-size: 1.1em; font-weight:bold; color: #e74c3c;">Search Failed</div>
+                                <p>${data.message || "Could not find a matching report."}</p>`;
+              modal.style.display = "block";
+            }
+          })
+          .catch((error) => {
+            console.error("Search Error:", error);
+            const modal = document.getElementById("resultsModal");
+            const body = document.getElementById("resultsBody");
+            body.innerHTML = `<div style="margin-bottom: 15px; font-size: 1.1em; font-weight:bold; color: #e74c3c;">Search Error</div>
+                              <div style="font-size: 1rem; color: #333;">${error.message}</div>
+                              <div style="margin-top: 10px; font-size: 0.9em; color: #777;">The server might be down or the URL is incorrect.</div>`;
+            modal.style.display = "block";
+          })
+          .finally(() => {
+            searchBtn.textContent = originalText;
+            searchBtn.disabled = false;
+          });
+      });
+
+      // --- Modal Logic ---
+      // Updated to match the submission table format exactly
+      function displayResults(data) {
+        const modal = document.getElementById("resultsModal");
+        const body = document.getElementById("resultsBody");
+
+        let html = `<div style="margin-bottom: 15px; font-size: 1.1em; font-weight:bold;">${data.message}</div>`;
+
+        html += `<table class="results-table">
                     <thead>
                         <tr>
                             <th>Field</th>
-                            <th>Your Input</th>
+                            <th>Your Value</th>
                             <th>Correct Value</th>
-                            <th style="text-align: center;">Accuracy</th>
+                            <th>Your Grade</th>
+                            <th>Correct Grade</th>
+                            <th>Accuracy</th>
                         </tr>
                     </thead>
-                    <tbody>
-            `;
+                    <tbody>`;
 
-            data.breakdown.forEach(item => {
-                const accuracy = parseFloat(item.accuracy);
-                const hue = accuracy * 1.2; // Maps 0-100 to 0-120 (red to green)
-                const color = `hsl(${hue}, 80%, 45%)`;
+        if (data.breakdown) {
+          data.breakdown.forEach((item) => {
+            let accClass = "accuracy-low";
+            const acc = parseFloat(item.accuracy);
+            if (acc >= 90) accClass = "accuracy-high";
+            else if (acc >= 70) accClass = "accuracy-med";
 
-                const userGradeText = item.userGrade ? ` (${item.userGrade})` : '';
-                const correctGradeText = item.correctGrade ? ` (${item.correctGrade})` : '';
-
-                tableHTML += `
-                    <tr>
-                        <td>${item.field}</td>
-                        <td>${item.userValue}${userGradeText}</td>
-                        <td>${item.correctValue}${correctGradeText}</td>
-                        <td class="accuracy-cell" style="color: ${color};">${accuracy.toFixed(0)}%</td>
-                    </tr>
-                `;
-            });
-
-            tableHTML += `</tbody></table>`;
-            breakdownContainer.innerHTML = tableHTML;
-
-            if (data.overallAccuracy !== undefined) {
-                const overallAccuracy = parseFloat(data.overallAccuracy);
-                const overallHue = overallAccuracy * 1.2;
-                const overallColor = `hsl(${overallHue}, 80%, 45%)`;
-                overallAccuracyContainer.innerHTML = `Overall Accuracy: <span style="color: ${overallColor};">${overallAccuracy.toFixed(1)}%</span>`;
-            } else {
-                overallAccuracyContainer.innerHTML = '';
-            }
-
-            modal.style.display = 'flex';
+            html += `<tr>
+                      <td>${item.field}</td>
+                      <td>${item.userValue}</td>
+                      <td>${item.correctValue}</td>
+                      <td>${item.userGrade || ""}</td>
+                      <td>${item.correctGrade || ""}</td>
+                      <td class="${accClass}">${item.accuracy}%</td>
+                  </tr>`;
+          });
         }
+        
+        html += `</tbody></table>`;
+        body.innerHTML = html;
+        modal.style.display = "flex";
+      }
 
-        const resultsModal = document.getElementById('resultsModal');
-        if (resultsModal) {
-            const closeBtn = resultsModal.querySelector('.modal-close');
-            closeBtn.addEventListener('click', () => {
-                resultsModal.style.display = 'none';
-            });
-            resultsModal.addEventListener('click', (e) => {
-                if (e.target === resultsModal) {
-                    resultsModal.style.display = 'none';
-                }
-            });
-        }
+      const resultsModal = document.getElementById("resultsModal");
+      if (resultsModal) {
+        const closeBtn = resultsModal.querySelector(".close-modal");
+        closeBtn.addEventListener("click", () => {
+          resultsModal.style.display = "none";
+        });
+        resultsModal.addEventListener("click", (e) => {
+          if (e.target === resultsModal) {
+            resultsModal.style.display = "none";
+          }
+        });
+      }
 
+      // --- Submission Logic ---
+      document
+        .getElementById("submit-grading-btn")
+        .addEventListener("click", () => {
+          const btn = document.getElementById("submit-grading-btn");
+          const originalText = btn.textContent;
+          btn.textContent = "Uploading Image...";
+          btn.disabled = true;
 
-        // --- Submission Logic ---
-        document.getElementById('submit-grading-btn').addEventListener('click', () => {
-            const btn = document.getElementById('submit-grading-btn');
-            const originalText = btn.textContent;
-            btn.textContent = "Uploading Image...";
-            btn.disabled = true;
+          // Temporarily deselect to capture clean image
+          const previousSelection = selectedInclusion;
+          selectedInclusion = null;
+          render();
 
-            // Temporarily deselect to capture clean image
-            const previousSelection = selectedInclusion;
-            selectedInclusion = null;
-            render();
+          // 1. Upload Image to ImgBB
+          const base64 = canvas.toDataURL("image/png").split(",")[1];
 
-            // 1. Upload Image to ImgBB
-            const base64 = canvas.toDataURL("image/png").split(",")[1];
+          // Restore selection
+          selectedInclusion = previousSelection;
+          render();
 
-            // Restore selection
-            selectedInclusion = previousSelection;
-            render();
+          fetch(
+            "https://api.imgbb.com/1/upload?key=6124f899a73f588244decc1789f2ba68",
+            {
+              method: "POST",
+              body: new URLSearchParams({
+                image: base64,
+              }),
+            },
+          )
+            .then((response) => response.json())
+            .then((result) => {
+              if (result.success) {
+                const imageUrl = result.data.url;
+                btn.textContent = "Submitting Data...";
 
-            fetch("https://api.imgbb.com/1/upload?key=6124f899a73f588244decc1789f2ba68", {
-                method: "POST",
-                body: new URLSearchParams({
-                    image: base64
-                })
+                // 2. Gather all data
+                const symmetryTags = Array.from(
+                  document.querySelectorAll("#symmetryOutput .tag"),
+                ).map((tag) => tag.textContent);
+
+                const formData = {
+                  studentName: document.getElementById("studentName").value,
+                  stoneNumber: document.getElementById("stoneNumber").value,
+                  shape: document.getElementById("shapeCut").value,
+                  carat: document.getElementById("caratWeight").value,
+                  clarity: document.getElementById("clarity").value,
+                  color: document.getElementById("colorSelect").value,
+                  fluorescence: document.getElementById("fluorescence").value,
+
+                  // Measurements
+                  measMax: document.getElementById("measMax").value,
+                  measMin: document.getElementById("measMin").value,
+                  measAvg: document.getElementById("measAvg").value,
+                  measHeight: document.getElementById("measHeight").value,
+
+                  // Proportions
+                  propDepth: document.getElementById("propDepth").value,
+                  gradeDepth: document.getElementById("gradeDepth").value,
+                  propTable: document.getElementById("propTable").value,
+                  gradeTable: document.getElementById("gradeTable").value,
+                  propPavilion: document.getElementById("propPavilion").value,
+                  gradePavilion: document.getElementById("gradePavilion").value,
+                  propGirdle: document.getElementById("propGirdle").value,
+                  gradeGirdle: document.getElementById("gradeGirdle").value,
+                  propCrownH: document.getElementById("propCrownH").value,
+                  gradeCrownH: document.getElementById("gradeCrownH").value,
+                  propCrownA: document.getElementById("propCrownA").value,
+                  gradeCrownA: document.getElementById("gradeCrownA").value,
+
+                  // Grades
+                  gradeFinalProp:
+                    document.getElementById("gradeFinalProp").value,
+                  culetCondition:
+                    document.getElementById("culetCondition").value,
+                  gradePolish: document.getElementById("gradePolish").value,
+                  gradeSym: document.getElementById("gradeSym").value,
+                  symmetryVariations: JSON.stringify(symmetryTags),
+
+                  // Inclusions List
+                  inclusions:
+                    document.getElementById("inclusionsOutput").textContent,
+                  inclusionsData: JSON.stringify(inclusions),
+                  imageUrl: imageUrl,
+                };
+
+                return fetch(GOOGLE_SCRIPT_URL, {
+                  method: "POST",
+                  body: JSON.stringify(formData),
+                });
+              } else {
+                throw new Error(
+                  "Image upload failed: " +
+                    (result.error ? result.error.message : "Unknown error"),
+                );
+              }
             })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    const imageUrl = result.data.url;
-                    btn.textContent = "Submitting Data...";
+            .then((response) => response.json())
+            .then((data) => {
+              const modal = document.getElementById("resultsModal");
+              const body = document.getElementById("resultsBody");
 
-                    // 2. Gather all data
-                    const formData = {
-                        studentName: document.getElementById('studentName').value,
-                        stoneNumber: document.getElementById('stoneNumber').value,
-                        shape: document.getElementById('shapeCut').value,
-                        carat: document.getElementById('caratWeight').value,
-                        clarity: document.getElementById('clarity').value,
-                        color: document.getElementById('colorSelect').value,
-                        fluorescence: document.getElementById('fluorescence').value,
-                        
-                        // Measurements
-                        measMax: document.getElementById('measMax').value,
-                        measMin: document.getElementById('measMin').value,
-                        measAvg: document.getElementById('measAvg').value,
-                        measHeight: document.getElementById('measHeight').value,
-
-                        // Proportions
-                        propDepth: document.getElementById('propDepth').value,
-                        gradeDepth: document.getElementById('gradeDepth').value,
-                        propTable: document.getElementById('propTable').value,
-                        gradeTable: document.getElementById('gradeTable').value,
-                        propPavilion: document.getElementById('propPavilion').value,
-                        gradePavilion: document.getElementById('gradePavilion').value,
-                        propGirdle: document.getElementById('propGirdle').value,
-                        gradeGirdle: document.getElementById('gradeGirdle').value,
-                        propCrownH: document.getElementById('propCrownH').value,
-                        gradeCrownH: document.getElementById('gradeCrownH').value,
-                        propCrownA: document.getElementById('propCrownA').value,
-                        gradeCrownA: document.getElementById('gradeCrownA').value,
-
-                        // Grades
-                        gradeFinalProp: document.getElementById('gradeFinalProp').value,
-                        culetCondition: document.getElementById('culetCondition').value,
-                        gradePolish: document.getElementById('gradePolish').value,
-                        culetCondition: document.getElementById('culetCondition').value,
-                        gradeSym: document.getElementById('gradeSym').value,
-
-                        // Inclusions List
-                        inclusions: document.getElementById('inclusionsOutput').textContent,
-                        imageUrl: imageUrl
-                    };
-
-                    return fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify(formData)
-                    });
-                } else {
-                    throw new Error('Image upload failed: ' + (result.error ? result.error.message : 'Unknown error'));
-                }
+              if (data.breakdown && data.breakdown.length > 0) {
+                // Replaced inline HTML generation with unified function
+                displayResults(data);
+                modal.style.display = "block";
+              } else {
+                console.warn("Script returned success: false or no breakdown:", data);
+                body.innerHTML = `<div style="margin-bottom: 15px; font-size: 1.1em; font-weight:bold; color: #e74c3c;">Notice</div>
+                                  <div style="font-size: 1rem; color: #333;">${data.message || 'An unknown error occurred on the server.'}</div>`;
+                modal.style.display = "block";
+              }
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.breakdown && data.breakdown.length > 0) {
-                    // Populate and show modal
-                    const modal = document.getElementById('resultsModal');
-                    const body = document.getElementById('resultsBody');
-                    
-                    let html = `<div style="margin-bottom: 15px; font-size: 1.1em; font-weight:bold;">${data.message}</div>`;
-                    
-                    html += `<table class="results-table">
-                        <thead>
-                            <tr>
-                                <th>Field</th>
-                                <th>Your Value</th>
-                                <th>Correct Value</th>
-                                <th>Your Grade</th>
-                                <th>Correct Grade</th>
-                                <th>Accuracy</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-                    
-                    data.breakdown.forEach(item => {
-                        let accClass = 'accuracy-low';
-                        const acc = parseFloat(item.accuracy);
-                        if (acc >= 90) accClass = 'accuracy-high';
-                        else if (acc >= 70) accClass = 'accuracy-med';
-                        
-                        html += `<tr>
-                            <td>${item.field}</td>
-                            <td>${item.userValue}</td>
-                            <td>${item.correctValue}</td>
-                            <td>${item.userGrade || ''}</td>
-                            <td>${item.correctGrade || ''}</td>
-                            <td class="${accClass}">${item.accuracy}%</td>
-                        </tr>`;
-                    });
-                    
-                    html += `</tbody></table>`;
-                    body.innerHTML = html;
-                    modal.style.display = 'block';
-                    document.querySelector('.close-modal').onclick = () => modal.style.display = 'none';
-                    window.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; };
-                } else {
-                    alert(data.message); // Fallback if no detailed breakdown is available
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Submission failed: ' + error.message);
+            .catch((error) => {
+              console.error("Submission Error:", error);
+              const modal = document.getElementById("resultsModal");
+              const body = document.getElementById("resultsBody");
+              body.innerHTML = `<div style="margin-bottom: 15px; font-size: 1.1em; font-weight:bold; color: #e74c3c;">Submission Failed</div>
+                                <div style="font-size: 1rem; color: #333;">${error.message}</div>
+                                <div style="margin-top: 10px; font-size: 0.9em; color: #777;">Make sure your GOOGLE_SCRIPT_URL is up to date and responding correctly.</div>`;
+              modal.style.display = "block";
             })
             .finally(() => {
-                btn.textContent = originalText;
-                btn.disabled = false;
+              btn.textContent = originalText;
+              btn.disabled = false;
             });
         });
-
     </script>
-
-</body>
+  </body>
 </html>

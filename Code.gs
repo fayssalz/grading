@@ -1,23 +1,80 @@
 function doPost(e) {
+  // Lock to prevent concurrent overwrites
+  var lock = LockService.getScriptLock();
+  lock.tryLock(10000);
+
   try {
     const data = JSON.parse(e.postData.contents);
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    
-    // --- 1. Log Student Entry ---
     const entrySheet = ss.getSheetByName("answers");
-    const timestamp = new Date();
-    const data = JSON.parse(e.postData.contents);
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
     
+    // --- SEARCH LOGIC ---
+    if (data.action === "search") {
+      const rows = entrySheet.getDataRange().getValues();
+      let foundReport = null;
+
+      // Loop backwards to find the most recent entry
+      for (let i = rows.length - 1; i >= 1; i--) {
+        const row = rows[i];
+        // Col B (1) is Name, Col C (2) is Stone Number
+        if (String(row[1]).trim().toLowerCase() === String(data.name).trim().toLowerCase() && 
+            String(row[2]).trim() === String(data.stoneNumber).trim()) {
+          
+          foundReport = {
+            studentName: row[1],
+            stoneNumber: row[2],
+            shape: row[3],
+            carat: row[4],
+            clarity: row[5],
+            color: row[6],
+            fluorescence: row[7],
+            measMax: row[8],
+            measMin: row[9],
+            measAvg: row[10],
+            measHeight: row[11],
+            propDepth: row[12],
+            gradeDepth: row[13],
+            propTable: row[14],
+            gradeTable: row[15],
+            propPavilion: row[16],
+            gradePavilion: row[17],
+            propGirdle: row[18],
+            gradeGirdle: row[19],
+            propCrownH: row[20],
+            gradeCrownH: row[21],
+            propCrownA: row[22],
+            gradeCrownA: row[23],
+            gradeFinalProp: row[24],
+            culetCondition: row[25],
+            gradePolish: row[26],
+            gradeSym: row[27],
+            inclusions: row[28],
+            imageUrl: row[29],
+            symmetryVariations: row[30],
+            inclusionsData: row[31]
+          };
+          break;
+        }
+      }
+
+      // If found, run the comparison logic to generate the breakdown
+      const result = foundReport
+        ? compareWithDatabase(foundReport, ss) 
+        : { success: false, message: "Report not found." };
+      
+      // Attach the raw report data to the result in case the frontend needs it (e.g. for images)
+      if (foundReport) result.report = foundReport;
+
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // --- 1. Log Student Entry ---
-    const entrySheet = ss.getSheetByName("answers");
     const timestamp = new Date();
     
     // Construct the row with all fields including new proportion grades
     const entryRow = [
-    // Construct the row with all fields including new proportion grades
-    const entryRow = [
-      new Date(),                 // Column A: Timestamp
+      timestamp,                  // Column A: Timestamp
       data.studentName,           // Column B
       data.stoneNumber,           // Column C
       data.shape,                 // Column D
@@ -53,19 +110,69 @@ function doPost(e) {
       data.gradeFinalProp,        // Column Y
       data.culetCondition,        // Column Z (New Field: Culet Condition)
       data.gradePolish,           // Column AA
-      data.culetCondition,        // Column Z (New Field: Culet Condition)
-      data.gradePolish,           // Column AA
       data.gradeSym,              // Column AB
 
 
       // Inclusions & Image
       data.inclusions,            // Column AC
-      data.imageUrl               // Column AD
+      data.imageUrl,              // Column AD
+      data.symmetryVariations,    // Column AE (New)
+      data.inclusionsData         // Column AF (New)
     ];
     
     entrySheet.appendRow(entryRow);
     
-    // --- 2. Compare with Database ---
+    // --- 2. Compare with Database (Refactored) ---
+    let result = compareWithDatabase(data, ss);
+    
+    // If successful comparison, log the accuracy to the results sheet
+    if (result.success && result.overallAccuracy !== undefined) {
+      // Original logic for logging mismatch details
+      const breakdown = result.breakdown;
+      const overallAccuracy = result.overallAccuracy;
+      
+      // Reconstruct the logic for logging mismatch details that was inside doPost
+      /* 
+         Note: The compareWithDatabase function returns the breakdown array.
+         We can iterate over it here to log to "results" sheet just like before.
+      */
+       
+      const mismatchDetails = breakdown
+        .filter(item => parseFloat(item.accuracy) < 100)
+        .map(item => {
+            let userStr = item.userValue;
+            if (item.userGrade) userStr += ` (${item.userGrade})`;
+            let dbStr = item.correctValue;
+            if (item.correctGrade) dbStr += ` (${item.correctGrade})`;
+            return `${item.field}: Student(${userStr}) vs DB(${dbStr})`;
+          })
+        .join(", ");
+
+      const compSheet = ss.getSheetByName("results");
+      compSheet.appendRow([
+        timestamp,
+        data.studentName,
+        data.stoneNumber,
+        overallAccuracy.toFixed(1) + "%",
+        mismatchDetails
+      ]);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({status: "error", message: error.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Core grading logic used by both Search and Submit
+ */
+function compareWithDatabase(data, ss) {
     const dbSheet = ss.getSheetByName("database");
     const dbData = dbSheet.getDataRange().getValues();
     
@@ -79,12 +186,13 @@ function doPost(e) {
       }
     }
     
-    let result = { success: false, message: "Entry saved, but an unknown error occurred during comparison." };
-    
-    if (dbStone) {
-      // --- New Comparison & Breakdown Logic ---
+    if (!dbStone) {
+       return { success: true, message: "Data loaded, but Stone Number not found in correct answer database.", breakdown: [] };
+    }
+
+    // --- Comparison Logic ---
       const gradeRank = {
-        'poor': 0, 'fair': 1, 'good': 2, 'very good': 3, 'excellent': 4, 'ideal': 5
+        'poor': 0, 'fair': 1, 'good': 2, 'verygood': 3, 'excellent': 4, 'ideal': 5
       };
       const clarityRank = {
         'i3': 0, 'i2': 1, 'i1': 2, 'si2': 3, 'si1': 4, 'vs2': 5, 'vs1': 6, 'vvs2': 7, 'vvs1': 8, 'if': 9, 'fl': 10
@@ -134,6 +242,10 @@ function doPost(e) {
             if (field === 'Color') rankMap = colorRank;
             if (field === 'Culet') rankMap = culetRank;
             if (field === 'Fluorescence') rankMap = fluorescenceRank;
+            if (field === 'Polish' || field === 'Symmetry' || field === 'Final Prop Grade') rankMap = gradeRank;
+
+            // Special case for Carat: if not treated as numeric range, treat as exact
+            if (field === 'Carat' && isNumeric) rankMap = null; 
 
             if (rankMap) {
                 const userRank = rankMap.hasOwnProperty(uStr) ? rankMap[uStr] : -1;
@@ -157,8 +269,8 @@ function doPost(e) {
         }
         // --- Numeric and Grade-based comparison ---
         else {
-            const uVal = parseFloat(userValue);
-            const dVal = parseFloat(dbValue);
+            const uVal = parseFloat(userValue || 0);
+            const dVal = parseFloat(dbValue || 0);
 
             // Handle non-numeric inputs gracefully
             if (isNumeric && (isNaN(uVal) || isNaN(dVal) || dVal === 0)) {
@@ -168,9 +280,9 @@ function doPost(e) {
                     accuracy = 0;
                 }
             } else {
-                // Define limits based on user request
-                const softLimit = isAngle ? 2 : (isPercentage ? 2 : dVal * 0.02); // 2 degrees, 2 points, or 2%
-                const hardLimit = isAngle ? 4 : (isPercentage ? 4 : dVal * 0.04); // 4 degrees, 4 points, or 4%
+                // Define limits: Carat uses 0.01/0.02, others use 2/4 or 2%/4%
+                const softLimit = field === 'Carat' ? 0.01 : (isAngle ? 2 : (isPercentage ? 2 : dVal * 0.02)); // Carat soft limit: 0.01ct
+                const hardLimit = field === 'Carat' ? 0.03 : (isAngle ? 4 : (isPercentage ? 4 : dVal * 0.04)); // Carat hard limit: 0.03ct (was 0.02)
                 const numericDiff = isNumeric ? Math.abs(uVal - dVal) : 0;
 
                 const normUserGrade = normalizeString(userGrade);
@@ -237,52 +349,17 @@ function doPost(e) {
       
       compareAndScore("Final Prop Grade", data.gradeFinalProp, 22, null, null, false, false, false);
       compareAndScore("Culet", data.culetCondition, 23, null, null, false, false, false);
-      compareAndScore("Polish", null, null, data.gradePolish, 24, false, false, false);
-      compareAndScore("Symmetry", null, null, data.gradeSym, 25, false, false, false);
+      compareAndScore("Polish", data.gradePolish, 24, null, null, false, false, false);
+      compareAndScore("Symmetry", data.gradeSym, 25, null, null, false, false, false);
 
       // Calculate overall accuracy
       const totalAccuracy = breakdown.reduce((sum, item) => sum + parseFloat(item.accuracy), 0);
       const overallAccuracy = breakdown.length > 0 ? totalAccuracy / breakdown.length : 0;
 
-      result = {
+      return {
         success: true,
-        message: `Entry saved. Overall Accuracy: ${overallAccuracy.toFixed(1)}%`,
+        message: `Grading Report. Overall Accuracy: ${overallAccuracy.toFixed(1)}%`,
         overallAccuracy: overallAccuracy,
         breakdown: breakdown
       };
-
-      // --- 3. Log Comparison ---
-      const compSheet = ss.getSheetByName("results");
-      const mismatchDetails = breakdown
-        .filter(item => parseFloat(item.accuracy) < 100)
-        .map(item => {
-            let userStr = item.userValue;
-            if (item.userGrade) userStr += ` (${item.userGrade})`;
-            let dbStr = item.correctValue;
-            if (item.correctGrade) dbStr += ` (${item.correctGrade})`;
-            return `${item.field}: Student(${userStr}) vs DB(${dbStr})`;
-          })
-        .join(", ");
-
-      compSheet.appendRow([
-        timestamp,
-        data.studentName,
-        data.stoneNumber,
-        overallAccuracy.toFixed(1) + "%",
-        mismatchDetails
-      ]);
-    } else {
-      result.message = "Entry saved, but Stone Number not found in database.";
-    }
-    
-    return ContentService.createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
-      
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({status: "error", message: error.toString()}))
-      .setMimeType(ContentService.MimeType.JSON);
-    return ContentService.createTextOutput(JSON.stringify({status: "error", message: error.toString()}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
 }
-
