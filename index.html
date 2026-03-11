@@ -604,6 +604,22 @@
                             </select>
                         </div>
 
+                        <div class="form-group">
+                            <label>Culet Condition</label>
+                            <select id="culetCondition">
+                                <option value="">Select...</option>
+                                <option>Pointed</option>
+                                <option>None</option>
+                                <option>Very small faceted</option>
+                                <option>Small faceted</option>
+                                <option>Medium faceted</option>
+                                <option>Large faceted</option>
+                                <option>Abraded</option>
+                                <option>Chipped</option>
+                                <option>Damaged</option>
+                            </select>
+                        </div>
+
                         <div class="section-title">Symmetry</div>
                         <div class="form-group">
                             <label>Symmetry Variations (Click to add)</label>
@@ -1438,6 +1454,45 @@
             inclusions.forEach(inc => {
                 inc.draw(ctx, inc === selectedInclusion);
             });
+
+            // Draw a "ghost" marker on the opposite view for the selected inclusion
+            if (selectedInclusion) {
+                drawGhostMarker(selectedInclusion);
+            }
+        }
+
+        function drawGhostMarker(inclusion) {
+            const isCrown = inclusion.x < 400;
+            const crownCenterX = 185;
+            const pavilionCenterX = 616;
+
+            let ghostX, ghostY;
+
+            if (isCrown) {
+                // It's on the crown, calculate ghost position on pavilion
+                const dx = inclusion.x - crownCenterX;
+                ghostX = pavilionCenterX - dx;
+            } else {
+                // It's on the pavilion, calculate ghost position on crown
+                const dx = inclusion.x - pavilionCenterX;
+                ghostX = crownCenterX - dx;
+            }
+            ghostY = inclusion.y; // Y-coordinate remains the same
+
+            // Draw the marker (a semi-transparent crosshair)
+            ctx.save();
+            ctx.strokeStyle = 'rgba(52, 152, 219, 0.7)'; // A semi-transparent blue
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([4, 4]);
+            
+            ctx.beginPath();
+            ctx.moveTo(ghostX - 15, ghostY);
+            ctx.lineTo(ghostX + 15, ghostY);
+            ctx.moveTo(ghostX, ghostY - 15);
+            ctx.lineTo(ghostX, ghostY + 15);
+            ctx.stroke();
+            
+            ctx.restore();
         }
 
         // --- 4. Event Listeners ---
@@ -1775,6 +1830,7 @@
                         // Grades
                         gradeFinalProp: document.getElementById('gradeFinalProp').value,
                         gradePolish: document.getElementById('gradePolish').value,
+                        culetCondition: document.getElementById('culetCondition').value,
                         gradeSym: document.getElementById('gradeSym').value,
 
                         // Inclusions List
